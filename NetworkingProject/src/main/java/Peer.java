@@ -32,8 +32,15 @@ public class Peer {
     }
 
     private void setFilePieces (int fileSize, int pieceSize ) {
-        int numPieces = fileSize/pieceSize;
-        filePieces = new byte[numPieces][pieceSize];
+        int numPieces;
+
+        if fileSize%pieceSize != 0
+                numPieces = fileSize/pieceSize + 1;
+        else
+            numPieces = fileSize/pieceSize;
+
+
+        filePieces = new byte[numPieces][];
     }
 
     public int getListeningPort() {
@@ -44,10 +51,16 @@ public class Peer {
         return peerID;
     }
 
+    public String interpertMessage(byte messeageType)
+    {
+        
+    }
+
     /* Print the Peer details */
     public void printPeerInfo() {
-        System.out.println("The Hostname:"+ hostName );
+        System.out.println("*******Peer Information*******");
         System.out.println("Peer ID:" + peerID );
+        System.out.println("Hostname:"+ hostName );
         System.out.println("The Listening Port:" + listeningPort );
         System.out.println("Has File:" + hasFile);
     }
