@@ -42,6 +42,35 @@ class Project {
         return lhm;
     }
 
+    public static LinkedHashMap readCommon(String path) {
+        LinkedHashMap<String, Integer> lhm = new LinkedHashMap<>();
+        try {
+            // Create input stream; read first byte
+            File file = new File(path);
+            Scanner input = new Scanner(file);
+
+            //Create the Map
+            while(input.hasNextLine()) {
+                String key;
+                int term;
+                String line = input.nextLine();
+                String[] lineArr = line.split(" ");
+
+                key = lineArr[1];
+                term = Integer.parseInt(lineArr[1]);
+
+                lhm.put(key, term);
+            }
+        }
+        catch(Exception e) {
+            // Scream!
+            System.out.println("REEEEEEEE!!!  IT NO EXIST!!!  FEED ME PROPER PATH!!!");
+            e.getStackTrace();
+        }
+
+        return lhm;
+    }
+
     public static void main(String[]args){
         //Setup scanner for user input
         Scanner userInput = new Scanner(System.in);
