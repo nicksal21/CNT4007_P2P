@@ -80,6 +80,7 @@ class Project {
 
         //Read PeerInfo files
         LinkedHashMap<Integer, String[]> PeerInfo  = readPeerInfo(path);
+        LinkedHashMap CommonInfo = readCommon(path);
         /*           PeerInfo Legend
         Key = the peer ID
         Map holds term array which is
@@ -98,6 +99,11 @@ class Project {
             int temp = 1001 + i;
             System.out.println(Arrays.toString(PeerInfo.get(temp)));
         }
+
+        Peer[] pholder = new Peer[PeerInfo.size()];
+
+        for(int i = 0; i < PeerInfo.size(); i++)
+            pholder[i] = new Peer(1001+i,PeerInfo,CommonInfo);
 
         try {
             ServerSocket skt = new ServerSocket(1, 1); // Set up receive socket

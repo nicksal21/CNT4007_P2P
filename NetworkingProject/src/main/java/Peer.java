@@ -34,7 +34,7 @@ public class Peer {
     private void setFilePieces (int fileSize, int pieceSize ) {
         int numPieces;
 
-        if fileSize%pieceSize != 0
+        if (fileSize%pieceSize != 0)
                 numPieces = fileSize/pieceSize + 1;
         else
             numPieces = fileSize/pieceSize;
