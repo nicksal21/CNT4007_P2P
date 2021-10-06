@@ -1,7 +1,11 @@
 package main.java;
 // Bullock, Peltekis, & Salazar
 // Imports
+import java.io.DataInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.util.Arrays;
 import java.util.Scanner;
 import java.util.LinkedHashMap;
@@ -57,14 +61,59 @@ class Project {
 
         Set<Integer> keySet = PeerInfo.keySet();
         System.out.println(keySet);
-        System.out.println(PeerInfo.get(1001));
-        System.out.println(PeerInfo.get(1004));
+        System.out.println(Arrays.toString(PeerInfo.get(1001)));
+        System.out.println(Arrays.toString(PeerInfo.get(1004)));
 
 
         for(int i = 0; i <= 8; i++) {
             int temp = 1001 + i;
             System.out.println(Arrays.toString(PeerInfo.get(temp)));
         }
+
+        try {
+            ServerSocket skt = new ServerSocket(1, 1); // Set up receive socket
+            FileInputStream dIn = new FileInputStream("skt");
+
+            byte messageType = (byte) dIn.read();
+            boolean done = false;
+            while (!done) {
+                switch(messageType) {
+                    case 0: // Type A
+                        System.out.println("Choke");
+                        break;
+                    case 1: // Type B
+                        System.out.println("Unchoke");
+                        break;
+                    case 2: // Type C
+                        System.out.println("Interested");
+                        break;
+                    case 3: // Type D
+                        System.out.println("Not Interested");
+                        break;
+                    case 4: // Type B
+                        System.out.println("Have");
+                        break;
+                    case 5: // Type B
+                        System.out.println("Bitfield");
+                        break;
+                    case 6: // Type B
+                        System.out.println("Request");
+                        break;
+                    case 7: // Type B
+                        System.out.println("Piece");
+                        break;
+                    default:
+                        done = true;
+                }
+                dIn.close();
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
+
     }
 }
 

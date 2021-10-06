@@ -1,3 +1,7 @@
+package main.java;
+
+import java.util.LinkedHashMap;
+
 public class Peer {
     String hostName;
     int peerID;
@@ -7,13 +11,10 @@ public class Peer {
 
     // This is the constructor of the class Employee
     public Peer(int key, LinkedHashMap<Integer, String[]> peerInfo ) {
-        hostName = peerInfo[key][1];
-        listeningPort = peerInfo[key][2];
+        hostName = peerInfo.get(key)[1];
+        listeningPort = Integer.parseInt(peerInfo.get(key)[2]);
 
-        if(peerInfo[key][3]==1)
-            hasFile = true;
-        else
-            hasFile = false;
+        hasFile = Integer.parseInt(peerInfo.get(key)[3]) == 1;
 
         isChoked = false;
     }
