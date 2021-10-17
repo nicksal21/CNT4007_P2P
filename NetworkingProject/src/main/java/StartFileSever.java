@@ -1,3 +1,5 @@
+package main.java;
+
 import java.io.*;
 import java.util.Arrays;
 import java.util.Scanner;
@@ -9,8 +11,8 @@ public class StartFileSever {
     public static void main(LinkedHashMap<Integer, String[]> peerInfo) throws Exception{
         for(int i = 1001;i<=1008; i++) {
             if(peerInfo.get(i)[2] == "1") {
-                ServerSocket sf = new ServerSocket(Integer.parseInt(peerInfo.get(i)[2]));
-                Socket sr = sf.accept();
+                ServerSocket serverSocket = new ServerSocket(Integer.parseInt(peerInfo.get(i)[2]));
+                Socket sr = serverSocket.accept();
                 FileInputStream tf = new FileInputStream("java/project_config_file_small/project_config_file_small/1001/thefile");
                 byte []b = new byte[16384];
                 tf.read(b, 0, b.length);

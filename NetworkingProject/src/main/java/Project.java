@@ -13,7 +13,7 @@ import java.util.Set;
 
 class Project {
     // Read in PeerInfo.cfg
-    public static LinkedHashMap readPeerInfo(String path) {
+    public static LinkedHashMap<Integer, String[]> readPeerInfo(String path) {
         LinkedHashMap<Integer, String[]> lhm = new LinkedHashMap<>();
         try {
             // Create input stream; read first byte
@@ -30,6 +30,35 @@ class Project {
                 term[0] = lineArr[1];
                 term[1] = lineArr[2];
                 term[2] = lineArr[3];
+                lhm.put(key, term);
+            }
+        }
+        catch(Exception e) {
+            // Scream!
+            System.out.println("REEEEEEEE!!!  IT NO EXIST!!!  FEED ME PROPER PATH!!!");
+            e.getStackTrace();
+        }
+
+        return lhm;
+    }
+
+    public static LinkedHashMap<String, Integer> readCommon(String path) {
+        LinkedHashMap<String, Integer> lhm = new LinkedHashMap<>();
+        try {
+            // Create input stream; read first byte
+            File file = new File(path);
+            Scanner input = new Scanner(file);
+
+            //Create the Map
+            while(input.hasNextLine()) {
+                String key;
+                int term;
+                String line = input.nextLine();
+                String[] lineArr = line.split(" ");
+
+                key = lineArr[1];
+                term = Integer.parseInt(lineArr[1]);
+
                 lhm.put(key, term);
             }
         }
@@ -61,6 +90,7 @@ class Project {
 
         Set<Integer> keySet = PeerInfo.keySet();
         System.out.println(keySet);
+        // Testing sample values
         System.out.println(Arrays.toString(PeerInfo.get(1001)));
         System.out.println(Arrays.toString(PeerInfo.get(1004)));
 
