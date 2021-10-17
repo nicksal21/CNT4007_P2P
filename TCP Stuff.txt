@@ -1,0 +1,13 @@
+TCP Stuff:
+Okay, it actually looks very simple.
+The best resource I found was: https://www.baeldung.com/a-guide-to-java-sockets
+second best was: https://www.codejava.net/java-se/networking/java-socket-server-examples-tcp-ip
+
+How I would go about it is: Copy paste the client and server code then tailor it to work for our purposes. I don't think there should be too much to change around.
+
+The biggest thing to do, I think, is the setting up of the network aka connecting each peer to eachother. 
+
+Stuff to do:
+-Set up client
+-Set up Server
+-Write the code to connect each peer to all other peers and  hold connections in map or something like that
