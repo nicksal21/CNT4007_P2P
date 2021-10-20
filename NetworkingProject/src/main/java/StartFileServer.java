@@ -9,8 +9,8 @@ public class StartFileServer { // https://www.baeldung.com/a-guide-to-java-socke
 
     private List<ServerSocket> serverSockets;
     private ServerSocket current;
-    LinkedHashMap<Integer, String[]>pInfo;
-    LinkedHashMap<String, Integer> cInfo;
+    private LinkedHashMap<Integer, String[]>pInfo;
+    private LinkedHashMap<String, Integer> cInfo;
 
     public void start(LinkedHashMap<Integer, String[]>peerInfo, LinkedHashMap<String, Integer> commonInfo) {
         pInfo = peerInfo;
@@ -49,6 +49,19 @@ public class StartFileServer { // https://www.baeldung.com/a-guide-to-java-socke
             this.clientSocket = socket;
         }
 
+        public void exit(Socket clientSocket, InputStream in, FileOutputStream out) {
+
+            try {
+                in.close();
+                out.close();
+                clientSocket.close();
+            }
+            catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+
         public void run(Peer p) {
             try {
                 out = new FileOutputStream("java/project_config_file_small/project_config_file_small/" + pInfo.get(p.getPeerID())[0] + "/thefile");
@@ -69,6 +82,9 @@ public class StartFileServer { // https://www.baeldung.com/a-guide-to-java-socke
                     out.close();
                     clientSocket.close();
             }
+            /*
+            Need try catch to in order to handle the file stream
+             */
             catch (IOException e) {
                 e.printStackTrace();
             }

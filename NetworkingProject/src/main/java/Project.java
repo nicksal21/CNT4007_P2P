@@ -80,6 +80,17 @@ class Project {
 
         //Read PeerInfo files
         LinkedHashMap<Integer, String[]> PeerInfo  = readPeerInfo(path);
+        path = userInput.next();
+
+        /*           CommonInfo Legend
+        Key = the peer ID
+        Map holds term array which is
+            0. computer's name
+            1. port number
+            2. If it has the complete file
+         */
+        LinkedHashMap<String, Integer> CommonInfo = readCommon(path);
+
         /*           PeerInfo Legend
         Key = the peer ID
         Map holds term array which is

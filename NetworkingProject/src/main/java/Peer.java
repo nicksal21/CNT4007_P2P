@@ -32,8 +32,9 @@ public class Peer {
         -Make this function apply to more than one peer
         use a list or map of some sort
      */
-    public void setIsChoked (boolean choked) {
-        isChoked = choked;
+    public void setIsChoked (int peerID, boolean choked) {
+        //PeerID -1001 is needed since Array Starts at 0
+        isChoked[peerID-1001] = choked;
     }
 
     private void setFilePieces (int fileSize, int pieceSize ) {
@@ -48,28 +49,37 @@ public class Peer {
         filePieces = new byte[numPieces][];
     }
 
+    // Returns the listing port of the peer
     public int getListeningPort() {
         return listeningPort;
     }
 
+    // Returns the peer's ID number
     public int getPeerID() {
         return peerID;
     }
 
-    public void interpretMessage(byte messageType)
+    /*
+    Parameters(s):
+    messageType - This will be a byte the dictates the message to be printed
+
+    Function:
+    Takes in a message type and outputs the corresponding message
+     */
+    public void interpretMessage(int PeerID, byte messageType)
     {
         switch(messageType) {
             case 0: // CHOKE
-                isChoked = true;
+                isChoked[peerID-1001] = true;
                 break;
             case 1: // UNCHOKE
-                isChoked = false;
+                isChoked[peerID-1001] = false;
                 break;
             case 2: // INTERESTED
-                isInterested = true;
+                isInterested[peerID-1001] = true;
                 break;
             case 3: // UNINTERESTED
-                isInterested = false;
+                isInterested[peerID-1001] = false;
                 break;
             case 4: // HAVE
                 System.out.println("Have");
