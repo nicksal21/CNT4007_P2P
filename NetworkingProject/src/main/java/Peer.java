@@ -6,13 +6,15 @@ import java.net.ServerSocket;
 import java.util.LinkedHashMap;
 
 public class Peer {
-    String hostName;
-    int peerID;
-    int listeningPort;
-    boolean hasFile;
-    boolean isChoked;
-    boolean isInterested;
-    byte [][] filePieces;
+    private String hostName;
+    private int peerID;
+    private int listeningPort;
+    private boolean hasFile;
+    private boolean [] isChoked;
+    private boolean [] isInterested;
+    private byte [][] filePieces;
+    private boolean wantToClose;
+
 
     // This is the constructor of the class Employee
     public Peer(int key, LinkedHashMap<Integer, String[]> peerInfo, LinkedHashMap<String, Integer> commonInfo ) {
