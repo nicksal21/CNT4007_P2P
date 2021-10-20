@@ -18,10 +18,13 @@ public class Peer {
     public Peer(int key, LinkedHashMap<Integer, String[]> peerInfo, LinkedHashMap<String, Integer> commonInfo ) {
         hostName = peerInfo.get(key)[1];
         listeningPort = Integer.parseInt(peerInfo.get(key)[2]);
-
         hasFile = Integer.parseInt(peerInfo.get(key)[3])== 1;
+        for(int i = 0; i < peerInfo.size(); i++) {
+            isChoked[i] = false;
+            isInterested[i] = false;
+        }
+        wantToClose = false;
 
-        isChoked = false;
 
         setFilePieces(commonInfo.get("FilesSize"), commonInfo.get("PieceSize"));
     }
@@ -37,6 +40,14 @@ public class Peer {
         isChoked[peerID-1001] = choked;
     }
 
+    /*
+    Parameter(s):
+    fileSize- the file size as an integer
+    pieceSize - the size of a piece within the file as an integer
+
+    Function:
+    Sets up the byte array with the correct number of columns using the number of pieces within a file
+     */
     private void setFilePieces (int fileSize, int pieceSize ) {
         int numPieces;
 
@@ -47,6 +58,25 @@ public class Peer {
 
 
         filePieces = new byte[numPieces][];
+    }
+
+    //Returns the array with all who is choked or not
+    public boolean[] getChokedPeer(){
+        return isChoked;
+    }
+
+    //Returns a boolean of if the peer wants to end it's connections
+    public boolean getWantToClose(){
+        return wantToClose;
+    }
+
+    // Returns if the peer has the complete file or not
+    public boolean getHasFile(){
+        return hasFile;
+    }
+
+    public byte[][] getFilePieces() {
+        return filePieces;
     }
 
     // Returns the listing port of the peer

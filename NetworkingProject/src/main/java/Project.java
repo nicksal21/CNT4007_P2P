@@ -98,7 +98,6 @@ class Project {
             1. port number
             2. If it has the complete file
          */
-
         Set<Integer> keySet = PeerInfo.keySet();
         System.out.println(keySet);
         // Testing sample values
@@ -111,50 +110,14 @@ class Project {
             System.out.println(Arrays.toString(PeerInfo.get(temp)));
         }
 
-        try {
-            ServerSocket skt = new ServerSocket(1, 1); // Set up receive socket
-            FileInputStream dIn = new FileInputStream("skt");
-
-            byte messageType = (byte) dIn.read();
-            boolean done = false;
-            while (!done) {
-                switch(messageType) {
-                    case 0: // Type A
-                        System.out.println("Choke");
-                        break;
-                    case 1: // Type B
-                        System.out.println("Unchoke");
-                        break;
-                    case 2: // Type C
-                        System.out.println("Interested");
-                        break;
-                    case 3: // Type D
-                        System.out.println("Not Interested");
-                        break;
-                    case 4: // Type B
-                        System.out.println("Have");
-                        break;
-                    case 5: // Type B
-                        System.out.println("Bitfield");
-                        break;
-                    case 6: // Type B
-                        System.out.println("Request");
-                        break;
-                    case 7: // Type B
-                        System.out.println("Piece");
-                        break;
-                    default:
-                        done = true;
-                }
-                dIn.close();
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
-
+        /*
+        TODO: Zeroth, FINISH CLIENT DESIGN
+        TODO: First, find a way to connect all peers to each other
+        TODO: Second, Make a holder for the peer object to hold connects / keep track of the connections
+        TODO: Third, Make an evaluator for information quality
+        TODO: Fourth, Test Cases.....
+        TODO: Fifth,  C*mment the SHITE out everything
+         */
     }
 }
 

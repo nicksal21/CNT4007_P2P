@@ -5,6 +5,14 @@ import java.io.*;
 import java.util.*;
 import java.net.*;
 
+
+/*
+
+This class is has-a relationship with a peer ie a peer has severs.
+The peer will hold
+
+ */
+
 public class StartFileServer { // https://www.baeldung.com/a-guide-to-java-sockets
 
     private List<ServerSocket> serverSockets;
@@ -12,7 +20,7 @@ public class StartFileServer { // https://www.baeldung.com/a-guide-to-java-socke
     private LinkedHashMap<Integer, String[]>pInfo;
     private LinkedHashMap<String, Integer> cInfo;
 
-    public void start(LinkedHashMap<Integer, String[]>peerInfo, LinkedHashMap<String, Integer> commonInfo) {
+    public void start(LinkedHashMap<Integer, String[]> peerInfo, LinkedHashMap<String, Integer> commonInfo) {
         pInfo = peerInfo;
         cInfo = commonInfo;
        //Keys will allow us to keep track of the size and location of the peers
@@ -64,23 +72,27 @@ public class StartFileServer { // https://www.baeldung.com/a-guide-to-java-socke
 
         public void run(Peer p) {
             try {
-                out = new FileOutputStream("java/project_config_file_small/project_config_file_small/" + pInfo.get(p.getPeerID())[0] + "/thefile");
-                in = clientSocket.getInputStream();
+                FileOutputStream out = new FileOutputStream("java/project_config_file_small/project_config_file_small/" + pInfo.get(p.getPeerID())[0] + "/thefile");
+                InputStream in = clientSocket.getInputStream();
 
-                byte[] b = new byte[cInfo.get("PieceSize")]; // Number of bits based off the Common.cfg
+                // Number of bits based off the Common.cfg
+                byte[] b = new byte[cInfo.get("PieceSize")];
 
-                // Check if client peer is unchoked;
-                // I.e., Client Peer is able to snd/rcv data
-                while(!p.isChoked[p.getPeerID() - 1001]) {
+                /*
+                Check if client peer is unchoked;
+                I.e., Client Peer is able to snd/rcv data
+                 */
+                while(!p.getChokedPeer()[p.getPeerID() - 1001]) {
                     //Reads the input stream
                     in.read(b, 0, b.length);
                     //Writes the File output stream
                     out.write(b, 0, b.length);
                 }
-                //If peer is choked then close everything
-                    in.close();
-                    out.close();
-                    clientSocket.close();
+
+                // Checks to see if the peer wants to close its connections
+                if(p.getWantToClose()) {
+                    exit(clientSocket,in, out);
+                }
             }
             /*
             Need try catch to in order to handle the file stream
@@ -88,11 +100,8 @@ public class StartFileServer { // https://www.baeldung.com/a-guide-to-java-socke
             catch (IOException e) {
                 e.printStackTrace();
             }
-
         }
-
     }
-
 }
 
 
