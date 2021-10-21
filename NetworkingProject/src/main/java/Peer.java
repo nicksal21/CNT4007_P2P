@@ -33,9 +33,9 @@ public class Peer {
 
     // Method to choke or unchoke a peer
     /*
-    TODO:
-        -Make this function apply to more than one peer
-        use a list or map of some sort
+     * TODO:
+     *    -Make this function apply to more than one peer
+     *     use a list or map of some sort
      */
     public void setIsChoked (int peerID, boolean choked) {
         //PeerID -1001 is needed since Array Starts at 0
@@ -43,12 +43,12 @@ public class Peer {
     }
 
     /*
-    Parameter(s):
-    fileSize- the file size as an integer
-    pieceSize - the size of a piece within the file as an integer
-
-    Function:
-    Sets up the byte array with the correct number of columns using the number of pieces within a file
+     * Parameter(s):
+     * fileSize- the file size as an integer
+     * pieceSize - the size of a piece within the file as an integer
+     *
+     * Function:
+     * Sets up the byte array with the correct number of columns using the number of pieces within a file
      */
     private void setFilePieces (int fileSize, int pieceSize ) {
         int numPieces;
@@ -62,12 +62,12 @@ public class Peer {
         filePieces = new byte[numPieces][];
     }
 
-    //Returns the array with all who is choked or not
+    // Returns the array with all who is choked or not
     public boolean[] getChokedPeer(){
         return isChoked;
     }
 
-    //Returns a boolean of if the peer wants to end it's connections
+    // Returns a boolean of if the peer wants to end it's connections
     public boolean getWantToClose(){
         return wantToClose;
     }
@@ -92,43 +92,55 @@ public class Peer {
     }
 
     /*
-    Parameters(s):
-    messageType - This will be a byte the dictates the message to be printed
-
-    Function:
-    Takes in a message type and outputs the corresponding message
+     * Parameters(s):
+     * messageType - This will be a byte the dictates the message to be printed
+     *
+     * Function:
+     * Takes in a message type and outputs the corresponding message
      */
     public void interpretMessage(int PeerID, byte messageType)
     {
         switch(messageType) {
-            case 0: // CHOKE
+            case 0:
+                // CHOKE - Set isChoked to true
                 isChoked[peerID-1001] = true;
                 break;
-            case 1: // UNCHOKE
+            case 1:
+                // UNCHOKE - Set isChoked to false
                 isChoked[peerID-1001] = false;
                 break;
-            case 2: // INTERESTED
+            case 2:
+                // INTERESTED - Set isInterested to true
                 isInterested[peerID-1001] = true;
                 break;
-            case 3: // UNINTERESTED
+            case 3:
+                // UNINTERESTED - Set isInterested to false
                 isInterested[peerID-1001] = false;
                 break;
-            case 4: // HAVE
+            case 4:
+                // HAVE
+                // TODO: IMPLEMENT HAVE
                 System.out.println("Have");
                 break;
-            case 5: // BITFIELD
+            case 5:
+                // BITFIELD
+                // TODO: IMPLEMENT BITFIELD
                 System.out.println("Bitfield");
                 break;
-            case 6: // REQUEST
+            case 6:
+                // REQUEST
+                // TODO: IMPLEMENT REQUEST
                 System.out.println("Request");
                 break;
-            case 7: // PIECE
+            case 7:
+                // PIECE
+                // TODO: IMPLEMENT PIECE
                 System.out.println("Piece");
                 break;
         }
     }
 
-    /* Print the Peer details */
+    // Print the Peer details
     public void printPeerInfo() {
         System.out.println("*******Peer Information*******");
         System.out.println("Peer ID:" + peerID );
