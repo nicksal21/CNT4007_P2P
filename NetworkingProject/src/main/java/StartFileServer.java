@@ -7,10 +7,9 @@ import java.net.*;
 
 
 /*
-
 This class is has-a relationship with a peer ie a peer has severs.
-The peer will hold
-
+Peers act as both client as servers. Peer hosts will recieve information
+from each of the clients through the InputStream and write to the OutputFile.
  */
 
 public class StartFileServer { // https://www.baeldung.com/a-guide-to-java-sockets
@@ -19,6 +18,11 @@ public class StartFileServer { // https://www.baeldung.com/a-guide-to-java-socke
     private ServerSocket current;
     private LinkedHashMap<Integer, String[]>pInfo;
     private LinkedHashMap<String, Integer> cInfo;
+
+    /*
+    Start uses the information provided by peer object and commonInfo to create
+    the server sockets.
+    */
 
     public void start(LinkedHashMap<Integer, String[]> peerInfo, LinkedHashMap<String, Integer> commonInfo) {
         pInfo = peerInfo;
@@ -33,7 +37,8 @@ public class StartFileServer { // https://www.baeldung.com/a-guide-to-java-socke
                 // Create a
                 serverSockets.add(new ServerSocket(Integer.parseInt(peerInfo.get(i)[0]), Integer.parseInt(peerInfo.get(i)[1])));
                 current = serverSockets.get(i);
-                new EchoClientHandler(current.accept()).start();
+                //EchoClientHander is a function below
+                new EchoClientHandler(current.accept(), peerInfo.get(i)[0]).start();
                 i++;
             } catch (IOException e) {
                 e.printStackTrace();
@@ -47,14 +52,19 @@ public class StartFileServer { // https://www.baeldung.com/a-guide-to-java-socke
         current.close();
     }
 
-    // Client Handler
+    /*
+    The EchoClientHandler will set the client socket that will currently be running.
+    The EchoClientHander contains the run peer method and
+     */
     private class EchoClientHandler extends Thread {
         private Socket clientSocket;
         private FileOutputStream out;
         private InputStream in;
 
-        public EchoClientHandler(Socket socket) {
+        public EchoClientHandler(Socket socket, String pname) throws IOException {
             this.clientSocket = socket;
+            out = new FileOutputStream("java/project_config_file_small/project_config_file_small/" + pname+ "/thefile");
+            in = clientSocket.getInputStream();
         }
 
         public void exit(Socket clientSocket, InputStream in, FileOutputStream out) {
@@ -72,8 +82,6 @@ public class StartFileServer { // https://www.baeldung.com/a-guide-to-java-socke
 
         public void run(Peer p) {
             try {
-                FileOutputStream out = new FileOutputStream("java/project_config_file_small/project_config_file_small/" + pInfo.get(p.getPeerID())[0] + "/thefile");
-                InputStream in = clientSocket.getInputStream();
 
                 // Number of bits based off the Common.cfg
                 byte[] b = new byte[cInfo.get("PieceSize")];

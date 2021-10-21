@@ -12,9 +12,14 @@ import java.util.LinkedHashMap;
 import java.util.Set;
 
 class Project {
-    // Read in PeerInfo.cfg
+    /*
+    The readPeerInfo will take in the file path to the Peer information document.
+    This function will scan the file and place the information into a linked has map
+    which will be utilized to build our peer object.
+     */
     public static LinkedHashMap<Integer, String[]> readPeerInfo(String path) {
         LinkedHashMap<Integer, String[]> lhm = new LinkedHashMap<>();
+        //Try catch is necessary to handle IO errors
         try {
             // Create input stream; read first byte
             File file = new File(path);
@@ -41,6 +46,12 @@ class Project {
 
         return lhm;
     }
+
+    /*
+    ReadCommon is identical to our readPeerInfo() function. This function will
+    scan the common.cfg file and save the information into a linked hash map
+    which will be utilized to configure our TCP network settings.
+     */
 
     public static LinkedHashMap<String, Integer> readCommon(String path) {
         LinkedHashMap<String, Integer> lhm = new LinkedHashMap<>();
@@ -70,6 +81,14 @@ class Project {
 
         return lhm;
     }
+
+    /*
+    In order for the main to run properly User needs to enter the locations
+    of the PeerInfo.cfg and CommonInfo.cfg in that order. With this information
+    the main will use the information provided to run the read functions mentioned
+    previously. The Linked Hash Maps will then been utilized to buid the Peer Object
+    and TCP Network.
+     */
 
     public static void main(String[]args){
         //Setup scanner for user input
@@ -116,7 +135,6 @@ class Project {
         TODO: Second, Make a holder for the peer object to hold connects / keep track of the connections
         TODO: Third, Make an evaluator for information quality
         TODO: Fourth, Test Cases.....
-        TODO: Fifth,  C*mment the SHITE out everything
          */
     }
 }
