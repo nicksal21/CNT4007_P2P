@@ -14,23 +14,34 @@ public class Peer {
     private boolean [] isInterested;
     private byte [][] filePieces;
     private boolean wantToClose;
+    private ServerSocket serverSocket;
+    private Socket[] clientSockets;
 
 
-    // This is the constructor of the class Employee
-    public Peer(int key, LinkedHashMap<Integer, String[]> peerInfo, LinkedHashMap<String, Integer> commonInfo ) {
+    // This is the constructor of the class Peer
+    public Peer(int key, LinkedHashMap<Integer, String[]> peerInfo, LinkedHashMap<String, Integer> commonInfo, SeverSocket severSocket, Socket[] clientSockets ) {
+        //Sets all peer object variable to the info obtained from reading peerInfo.cfg and commonInfo.cfg
         hostName = peerInfo.get(key)[1];
         listeningPort = Integer.parseInt(peerInfo.get(key)[2]);
         hasFile = Integer.parseInt(peerInfo.get(key)[3])== 1;
+
+        //Sets all arrays of isChoked and isInterested to flase
         for(int i = 0; i < peerInfo.size(); i++) {
             isChoked[i] = false;
             isInterested[i] = false;
         }
+
+        //Sets all other Peer object variables
         wantToClose = false;
+        this.serverSocket = severSocket;
+        this.clientSockets = clientSockets;
 
 
         setFilePieces(commonInfo.get("FilesSize"), commonInfo.get("PieceSize"));
     }
 
+
+    //*********************************** SET Functions ***********************************//
     // Method to choke or unchoke a peer
     /*
      * TODO:
@@ -50,7 +61,7 @@ public class Peer {
      * Function:
      * Sets up the byte array with the correct number of columns using the number of pieces within a file
      */
-    private void setFilePieces (int fileSize, int pieceSize ) {
+    public void setFilePieces (int fileSize, int pieceSize ) {
         int numPieces;
 
         if (fileSize%pieceSize != 0)
@@ -62,6 +73,15 @@ public class Peer {
         filePieces = new byte[numPieces][];
     }
 
+    public void setClientSockets(Socket [] clientSockets){
+        this.clientSockets = clientSockets;
+    }
+
+    public void setServerSockets(severSocket severSocket){
+        this.serverSocket = severSocket;
+    }
+
+    //*********************************** GET Functions ***********************************//
     // Returns the array with all who is choked or not
     public boolean[] getChokedPeer(){
         return isChoked;
@@ -91,6 +111,8 @@ public class Peer {
         return peerID;
     }
 
+
+    //*********************************** Object Specific Functions ***********************************//
     /*
      * Parameters(s):
      * messageType - This will be a byte the dictates the message to be printed
