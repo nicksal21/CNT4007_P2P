@@ -25,14 +25,14 @@ public class StartFileServer { // https://www.baeldung.com/a-guide-to-java-socke
     The Youtube link above discussess how to make this connections
     */
 
-    public void start(Peer[] Peers, LinkedHashMap<Integer, String[]> peerInfo, LinkedHashMap<String, Integer> commonInfo) {
+    public void start(Peer[] Peers, LinkedHashMap<Integer, String[]> peerInfo, LinkedHashMap<String, Integer> commonInfo) throws IOException{
         pInfo = peerInfo;
         cInfo = commonInfo;
         while (true)
-            for(int i = 0, i<= Peers.length; i++){
-                current = Peers[i].getServerSocket();
-                new EchoClientHandler(current.accept()).start();
-    }
+            for (int i = 0; i<=Peers.length; i++){
+            current = Peers[i].getServerSocket();
+            new EchoClientHandler(current.accept(), Peers[i]).start();
+        }
 
     }
 
@@ -49,13 +49,13 @@ public class StartFileServer { // https://www.baeldung.com/a-guide-to-java-socke
         private Socket clientSocket;
         private FileOutputStream out;
         private InputStream in;
-        private byte [] b;
+        private byte[] b;
         private int pieceStart = 0;
 
         // Constructor
-        public EchoClientHandler(Socket socket, Peer target) throws IOException{
+        public EchoClientHandler(Socket socket, Peer target) throws IOException {
             this.clientSocket = socket;
-            out = new FileOutputStream("java/project_config_file_small/project_config_file_small/" + target.getPeerID()+ "/thefile");
+            out = new FileOutputStream("java/project_config_file_small/project_config_file_small/" + target.getPeerID() + "/thefile");
             in = clientSocket.getInputStream();
         }
 
@@ -66,8 +66,7 @@ public class StartFileServer { // https://www.baeldung.com/a-guide-to-java-socke
                 in.close();
                 out.close();
                 this.clientSocket.close();
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
 
