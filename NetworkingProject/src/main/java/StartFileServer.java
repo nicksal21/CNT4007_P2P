@@ -13,38 +13,27 @@ Peers act as both client as servers. Peer hosts will recieve information
 from each of the clients through the InputStream and write to the OutputFile.
  */
 public class StartFileServer { // https://www.baeldung.com/a-guide-to-java-sockets
-    private List<ServerSocket> serverSockets;
     private ServerSocket current;
     private LinkedHashMap<Integer, String[]> pInfo;
     private LinkedHashMap<String, Integer> cInfo;
 
     /*
-    Start uses the information provided by peer object and commonInfo to create
-    the server sockets.
+    Start uses the information provided by peer object and commonInfo to connect the socekets
+    to each of the severs. In order to allow the server socket to handle multiple connection
+    you need to thread all the TCP connections.
+    https://www.youtube.com/watch?v=ZIzoesrHHQo&ab_channel=DavidDobervich
+    The Youtube link above discussess how to make this connections
     */
 
-    public void start(LinkedHashMap<Integer, String[]> peerInfo, LinkedHashMap<String, Integer> commonInfo) {
+    public void start(Peer[] Peers, LinkedHashMap<Integer, String[]> peerInfo, LinkedHashMap<String, Integer> commonInfo) {
         pInfo = peerInfo;
         cInfo = commonInfo;
+        while (true)
+            for(int i = 0, i<= Peers.length; i++){
+                current = Peers[i].getServerSocket();
+                new EchoClientHandler(current.accept()).start();
+    }
 
-        // Keys will allow us to keep track of the size and location of the peers
-        List<Integer> keys = new ArrayList<Integer>(peerInfo.keySet());
-
-        // While loop will create each of the Server Sockets for the peers
-        int i = keys.get(0);
-        while (i < keys.get(keys.size() - 1)) {
-            try {
-                // Create a server socket or throw an IOException
-                serverSockets.add(new ServerSocket(Integer.parseInt(peerInfo.get(i)[0]), Integer.parseInt(peerInfo.get(i)[1])));
-                current = serverSockets.get(i);
-                //EchoClientHander is a function below
-                new EchoClientHandler(current.accept(), peerInfo.get(i)[0]).start();
-                i++;
-            } catch (IOException e) {
-                e.printStackTrace();
-                break;
-            }
-        }
     }
 
     // Close the server
@@ -60,21 +49,23 @@ public class StartFileServer { // https://www.baeldung.com/a-guide-to-java-socke
         private Socket clientSocket;
         private FileOutputStream out;
         private InputStream in;
+        private byte [] b;
+        private int pieceStart = 0;
 
         // Constructor
-        public EchoClientHandler(Socket socket, String pname) throws IOException{
+        public EchoClientHandler(Socket socket, Peer target) throws IOException{
             this.clientSocket = socket;
-            out = new FileOutputStream("java/project_config_file_small/project_config_file_small/" + pname+ "/thefile");
+            out = new FileOutputStream("java/project_config_file_small/project_config_file_small/" + target.getPeerID()+ "/thefile");
             in = clientSocket.getInputStream();
         }
 
         // Close all streams and sockets on peer exit
-        public void exit(Socket clientSocket, InputStream in, FileOutputStream out) {
+        public void exit() {
 
             try {
                 in.close();
                 out.close();
-                clientSocket.close();
+                this.clientSocket.close();
             }
             catch (IOException e) {
                 e.printStackTrace();
@@ -82,15 +73,27 @@ public class StartFileServer { // https://www.baeldung.com/a-guide-to-java-socke
 
         }
 
+        /*
+    This function will set the offset for the file InputStream.
+    This function will check if the Peer has the piece that the
+    host wants. If not it will send the piece it does have
+     */
+
+        public void setPiece(int Piece, LinkedHashMap<String, Integer> commonInfo) {
+
+            // Number of bytes based off the Common.cfg
+            pieceStart = commonInfo.get("PieceSize") * Piece;
+
+            return;
+        }
+
         // Run peer
-        public void run(Peer p) {
+        public void run(Peer p, int bytWanted) {
             try {
                 // Input and Output Streams
                 InputStream in = clientSocket.getInputStream();
-                FileOutputStream out = new FileOutputStream("java/project_config_file_small/project_config_file_small/" + pInfo.get(p.getPeerID())[0] + "/thefile");
+                FileOutputStream out = new FileOutputStream("java/project_config_file_small/project_config_file_small/" + p.getPeerID() + "/thefile");
 
-                // Number of bits based off the Common.cfg
-                byte[] b = new byte[cInfo.get("PieceSize")];
 
                 /*
                  * Check if client peer is unchoked;
@@ -101,12 +104,12 @@ public class StartFileServer { // https://www.baeldung.com/a-guide-to-java-socke
                     in.read(b, 0, b.length);
                     // TODO: Use "b" so peer doesn't get stuck reading/writing from same location
                     // Writes the File output stream
-                    out.write(b, 0, b.length);
+                    out.write(b, pieceStart, b.length);
                 }
 
                 // Checks to see if the peer wants to close its connections
                 if (p.getWantToClose()) {
-                    exit(clientSocket, in, out);
+                    exit();
                 }
             }
             // Handle errors

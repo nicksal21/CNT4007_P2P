@@ -78,6 +78,7 @@ public class Peer {
         this.clientSockets = clientSockets;
     }
 
+
     public void setServerSockets(ServerSocket severSocket){
         this.serverSocket = severSocket;
     }
@@ -111,6 +112,16 @@ public class Peer {
     public int getPeerID() {
         return peerID;
     }
+
+    // Returns all of the peer's sockets
+    public Socket[] getClientSockets(){ return clientSockets;}
+
+    // Returns all of the peer's sockets
+    public ServerSocket getServerSocket{ return serverSocket;}
+
+    // Return Peers host name
+    public String getHostName(){ return hostName;}
+
 
 
     //*********************************** Object Specific Functions ***********************************//

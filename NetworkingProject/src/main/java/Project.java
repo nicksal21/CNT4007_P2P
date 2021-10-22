@@ -168,7 +168,7 @@ class Project {
 
         for(int i = 0; i < keySet.size(); i++) {
             for (int j = 0; j < keySet.size() - 1; j++) {
-                Socket clientSocket = new Socket();
+                Socket clientSocket = new Socket(Integer.parseInt(PeerInfo.get(1001+i)[0], PeerInfo.get(1001+i)[1]));
                 clientSockets[i][j] = clientSocket;
             }
             //ServerSocket serverSocket =
