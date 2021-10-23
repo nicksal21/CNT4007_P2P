@@ -1,16 +1,16 @@
 package main.java;
-// Bullock, Peltekis, & Salazar
+// Bullock, Peltekis, & Salazar P2P Project
 
 // Imports
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.*;
-import java.util.Scanner;
 
+/*
+* Main Project File:
+* Collects PeerInfo.cfg and Common.cfg and begins connections
+*/
 class Project {
 
     /*
@@ -19,7 +19,10 @@ class Project {
      * which will be utilized to build our peer object.
      */
     public static LinkedHashMap<Integer, String[]> readPeerInfo(String path) {
+        //Function Variables
         LinkedHashMap<Integer, String[]> lhm = new LinkedHashMap<>();
+
+
         //Try catch is necessary to handle IO errors
         try {
             // Create input stream; read first byte
@@ -46,6 +49,7 @@ class Project {
                 term[2] = lineArr[3];
                 lhm.put(key, term);
             }
+
         } catch (Exception e) {
             // Error Handling
             System.out.println("Error!  Pathway does not exist!");
@@ -91,8 +95,7 @@ class Project {
                 term = Integer.parseInt(lineArr[1]);
                 lhm.put(key, term);
             }
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             // Scream!
             System.out.println("REEEEEEEE!!!  IT NO EXIST!!!  FEED ME PROPER PATH!!!");
             e.getStackTrace();
@@ -105,11 +108,11 @@ class Project {
      * In order for the main to run properly User needs to enter the locations
      * of the PeerInfo.cfg and CommonInfo.cfg in that order. With this information
      * the main will use the information provided to run the read functions mentioned
-     * previously. The Linked Hash Maps will then been utilized to buid the Peer Object
+     * previously. The Linked Hash Maps will then been utilized to build the Peer Object
      * and TCP Network.
      */
 
-    public static void main(String[]args) throws IOException{
+    public static void main(String[] args) throws IOException {
         List<Peer> peersOnline = null;
         //Setup scanner for user input
         Scanner userInput = new Scanner(System.in);
@@ -143,8 +146,8 @@ class Project {
          */
         LinkedHashMap<String, Integer> CommonInfo = readCommon(path);
 
-        Set<Integer> keySet = PeerInfo.keySet();
-        System.out.println(keySet);
+        Set<Integer> keySetArray = PeerInfo.keySet();
+        Integer[] keySet = keySetArray.toArray(new Integer[keySetArray.size()]);
 
         // Testing sample values
         System.out.println(Arrays.toString(PeerInfo.get(1001)));
@@ -163,26 +166,38 @@ class Project {
          * to each of the hosts.
          */
 
-        ServerSocket[] serverSockets = new ServerSocket[keySet.size()];
-        Socket[][] clientSockets = new Socket[keySet.size()][keySet.size()];
 
-        for(int i = 0; i < keySet.size(); i++) {
-            for (int j = 0; j < keySet.size() - 1; j++) {
-                Socket clientSocket = new Socket(Integer.parseInt(PeerInfo.get(1001+i)[0], PeerInfo.get(1001+i)[1]));
-                clientSockets[i][j] = clientSocket;
+        Server[] servers = new Server[keySet.length];
+        Client[][] clients = new Client[keySet.length][keySet.length];
+
+
+        for (int i = 0; i < keySet.length; i++) {
+            for (int j = 0; j < keySet.length - 1; j++) {
+                //Client client = new Client(PeerInfo.get(1001+i)[0], Integer.parseInt(PeerInfo.get(1001+i)[1]));
+                Client client = new Client();
+                client.startConnection(PeerInfo.get(1001 + i)[0], Integer.parseInt(PeerInfo.get(1001 + i)[1]));
+
+                //Handshake
+                String handshakeMessage = "P2PFILESHARINGPROJ0000000000";
+                handshakeMessage += keySet[i];
+                client.sendMessage(handshakeMessage);
+
+
+                clients[i][j] = client;
+
             }
             //ServerSocket serverSocket =
-            serverSockets[i] = new ServerSocket(Integer.parseInt(PeerInfo.get(1001+i)[1]));
+            servers[i] = new Server();
         }
+
         /*
          * This for loop is responsible for creating peer objects which
          * will contain all the necessary information that our Peer-2-Peer
          * network will be utilizing
          */
-        for(int i = 0; i < keySet.size(); i++) {
-            peersOnline.add(new Peer(1001+i,PeerInfo, CommonInfo, serverSockets[i], clientSockets[i]));
+        for (int i = 0; i < keySet.length; i++) {
+            peersOnline.add(new Peer(1001 + i, PeerInfo, CommonInfo, servers[i], clients[i]));
         }
-
 
         /*
          * To-do list
@@ -191,9 +206,8 @@ class Project {
          * TODO: Second, Make a holder for the peer object to hold connects / keep track of the connections
          * TODO: Third, Make an evaluator for information quality
          * TODO: Fourth, Test Cases.....
-         * TODO: Fifth,  Comment the SH*T out everything
-         * TODO: Sixth, StartRemotePeer???
+         * TODO: Fifth, Comment everything!
+         * TODO: Sixth, StartRemotePeer.?
          */
     }
 }
-
