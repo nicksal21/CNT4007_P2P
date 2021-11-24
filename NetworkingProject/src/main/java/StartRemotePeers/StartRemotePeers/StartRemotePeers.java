@@ -1,4 +1,5 @@
-package main.java.StartRemotePeers.StartRemotePeers;/*
+package main.java.StartRemotePeers.StartRemotePeers;
+/*
  *                     CEN5501C Project2
  * This is the program starting remote processes.
  * This program was only tested on CISE SunOS environment.
@@ -30,11 +31,11 @@ public class StartRemotePeers {
 			while((st = in.readLine()) != null) {
 				
 				 String[] tokens = st.split("\\s+");
-		    	 //System.out.println("tokens begin ----");
-			     //for (int x=0; x<tokens.length; x++) {
-			     //    System.out.println(tokens[x]);
-			     //}
-		         //System.out.println("tokens end ----");
+		    	 // System.out.println("tokens begin ----");
+			     // for (int x=0; x<tokens.length; x++) {
+			     //     System.out.println(tokens[x]);
+			     //  }
+		         // System.out.println("tokens end ----");
 			    
 			     peerInfoVector.addElement(new RemotePeerInfo(tokens[0], tokens[1], tokens[2]));
 			
