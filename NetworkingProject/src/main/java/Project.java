@@ -15,12 +15,11 @@ class Project extends Thread {
     public Server[] servers;
     public Client[][] clients;
 
-    LinkedHashMap<Integer, String[]> PeerInfo;
-    LinkedHashMap<String, Integer> CommonInfo;
+    static LinkedHashMap<Integer, String[]> PeerInfo;
+    static LinkedHashMap<String, Integer> CommonInfo;
 
     Set<Integer> keySetArray;
     Integer[] keySet;
-
 
     /*
      * The readPeerInfo will take in the file path to the Peer information document.
@@ -121,38 +120,34 @@ class Project extends Thread {
      * and TCP Network.
      */
 
-    /*
-     public void Server() throws IOException {
+/*I figured out how to thread through this youtube video
+https://www.youtube.com/watch?v=eQk5AWcTS8w&ab_channel=JakobJenkov
+and this Stack overflow question
+https://stackoverflow.com/questions/877096/how-can-i-pass-a-parameter-to-a-java-thread
+ */
+     public static class PeerServer implements Runnable {
+         Server Peer;
+         int key;
+        int port;
+         PeerServer(Server peer, int k, int p){
+            key = k;
+            port = p;
+            Peer = peer;
+         }
+         @Override
+         public void run(){
+
+             System.out.println("Server " + key + " " + port + " is running");
+
+             try {
+                 Peer.startServer(key, port, PeerInfo, CommonInfo);
+             } catch (IOException e) {
+                 e.printStackTrace();
+             }
+
+         }
 
     }
-    public void Client() throws IOException {
-
-
-        for (int i = 0; i < keySet.length; i++) {
-            int port = Integer.parseInt(PeerInfo.get(1001 + i)[1]);
-            String hostname = PeerInfo.get(1001 + i)[0];
-
-            for (int j = 0; j < keySet.length - 1; j++) {
-                //Client client = new Client(PeerInfo.get(1001+i)[0], Integer.parseInt(PeerInfo.get(1001+i)[1]));
-                Client client = new Client();
-                client.startConnection(hostname, port);
-
-                //Handshake
-                String handshakeMessage = "P2PFILESHARINGPROJ0000000000";
-                handshakeMessage += keySet[i];
-                client.sendMessage(handshakeMessage);
-
-
-                clients[i][j] = client;
-
-            }
-
-        }
-
-
-    }
-     */
-
 
     public static void main(String[] args) throws IOException {
         List<Peer> peersOnline = null;
@@ -211,27 +206,35 @@ class Project extends Thread {
          */
 
 
+        //Need Java timers in order to keep everything in time and efficient
+        //https://docs.oracle.com/javase/7/docs/api/java/util/Timer.html
+        //In order to understand how they work
+
         Server[] servers = new Server[keySet.length];
+        Thread[] threads = new Thread[keySet.length];
         Client[][] clients = new Client[keySet.length][keySet.length];
 
-        Project obj = new Project();
-        Thread thread = new Thread(obj);
-        thread.start();
-
-        for (int i = 0; i < keySet.length; i++) {
-            int port = Integer.parseInt(PeerInfo.get(1001 + i)[1]);
-            String hostname = PeerInfo.get(1001 + i)[0];
+        //Starting severs in different threads
+        for (int k = 0; k < keySet.length; k++) {
+            int key = 1001 + k;
+            int port = Integer.parseInt(PeerInfo.get(1001 + k)[1]);
+            String hostname = PeerInfo.get(1001 + k)[0];
 
             //ServerSocket serverSocket =
-            servers[i] = new Server();
-            servers[i].start();
-            servers[i].startServer(1001 + i, port, PeerInfo, CommonInfo);
+            servers[k] = new Server();
+            //Making threads for servers
+            threads[k] = new Thread(new PeerServer(servers[k],key,port));
+            threads[k].start();
+        }
 
+        for (int i = 0; i < keySet.length; i++) {
             for (int j = 0; j < keySet.length - 1; j++) {
+                int portN = Integer.parseInt(PeerInfo.get(1001 + i)[1]);
+                String hostname = PeerInfo.get(1001 + i)[0];
                 //Client client = new Client(PeerInfo.get(1001+i)[0], Integer.parseInt(PeerInfo.get(1001+i)[1]));
                 Client client = new Client();
                 client.start();
-                client.startConnection(hostname, port);
+                client.startConnection(hostname, portN);
 
                 //Handshake
                 String handshakeMessage = "P2PFILESHARINGPROJ0000000000";
