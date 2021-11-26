@@ -37,13 +37,17 @@ public class Peer {
 
     // This is the constructor of the class Peer
     public Peer(int key, LinkedHashMap<Integer, String[]> peerInfo, LinkedHashMap<String,
-            Integer> commonInfo, Server server, Client[] clients) {
+            String> commonInfo, Server server, Client[] clients) {
         //Sets all peer object variable to the info obtained from reading peerInfo.cfg and commonInfo.cfg
-        hostName = peerInfo.get(key)[1];
-        listeningPort = Integer.parseInt(peerInfo.get(key)[2]);
-        hasFile = Integer.parseInt(peerInfo.get(key)[3]) == 1;
+        hostName = peerInfo.get(key)[0];
+        listeningPort = Integer.parseInt(peerInfo.get(key)[1]);
+        hasFile = Integer.parseInt(peerInfo.get(key)[2]) == 1;
+        peerID = key;
 
         //Sets all arrays of isChoked and isInterested to false
+        isChoked = new boolean[peerInfo.size()];
+        isInterested = new boolean[peerInfo.size()];
+
         for (int i = 0; i < peerInfo.size(); i++) {
             isChoked[i] = false;
             isInterested[i] = false;
@@ -55,7 +59,8 @@ public class Peer {
         this.clients = clients;
 
 
-        setFilePieces(commonInfo.get("FilesSize"), commonInfo.get("PieceSize"));
+
+        setFilePieces(Integer.parseInt(commonInfo.get("FileSize")), Integer.parseInt(commonInfo.get("PieceSize")));
     }
 
 

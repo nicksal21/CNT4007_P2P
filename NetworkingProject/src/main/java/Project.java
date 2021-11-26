@@ -8,15 +8,15 @@ import java.io.IOException;
 import java.util.*;
 
 /*
-* Main Project File:
-* Collects PeerInfo.cfg and Common.cfg and begins connections
-*/
+ * Main Project File:
+ * Collects PeerInfo.cfg and Common.cfg and begins connections
+ */
 class Project extends Thread {
     public Server[] servers;
     public Client[][] clients;
 
     static LinkedHashMap<Integer, String[]> PeerInfo;
-    static LinkedHashMap<String, Integer> CommonInfo;
+    static LinkedHashMap<String, String> CommonInfo;
 
     Set<Integer> keySetArray;
     Integer[] keySet;
@@ -73,8 +73,8 @@ class Project extends Thread {
      * which will be utilized to configure our TCP network settings.
      */
 
-    public static LinkedHashMap<String, Integer> readCommon(String path) {
-        LinkedHashMap<String, Integer> lhm = new LinkedHashMap<>();
+    public static LinkedHashMap<String, String> readCommon(String path) {
+        LinkedHashMap<String, String> lhm = new LinkedHashMap<>();
         try {
             // Create input stream; read first byte
             File file = new File(path);
@@ -94,13 +94,13 @@ class Project extends Thread {
             while (input.hasNextLine()) {
                 // Preprocess
                 String key;
-                int term;
+                String term;
                 String line = input.nextLine();
                 String[] lineArr = line.split(" ");
 
                 // Establish Map Entry
-                key = lineArr[1];
-                term = Integer.parseInt(lineArr[1]);
+                key = lineArr[0];
+                term = lineArr[1];
                 lhm.put(key, term);
             }
         } catch (Exception e) {
@@ -120,41 +120,42 @@ class Project extends Thread {
      * and TCP Network.
      */
 
-/*I figured out how to thread through this youtube video
-https://www.youtube.com/watch?v=eQk5AWcTS8w&ab_channel=JakobJenkov
-and this Stack overflow question
-https://stackoverflow.com/questions/877096/how-can-i-pass-a-parameter-to-a-java-thread
- */
-     public static class PeerServer implements Runnable {
-         Server Peer;
-         int key;
+    /*I figured out how to thread through this youtube video
+    https://www.youtube.com/watch?v=eQk5AWcTS8w&ab_channel=JakobJenkov
+    and this Stack overflow question
+    https://stackoverflow.com/questions/877096/how-can-i-pass-a-parameter-to-a-java-thread
+     */
+    public static class PeerServer implements Runnable {
+        Server Peer;
+        int key;
         int port;
-         PeerServer(Server peer, int k, int p){
+        PeerServer(Server peer, int k, int p){
             key = k;
             port = p;
             Peer = peer;
-         }
-         @Override
-         public void run(){
+        }
+        @Override
+        public void run(){
 
-             System.out.println("Server " + key + " " + port + " is running");
+            System.out.println("Server " + key + " " + port + " is running");
 
-             try {
-                 Peer.startServer(key, port, PeerInfo, CommonInfo);
-             } catch (IOException e) {
-                 e.printStackTrace();
-             }
+            try {
+                Peer.startServer(key, port+key, PeerInfo, CommonInfo);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
-         }
+        }
 
     }
 
     public static void main(String[] args) throws IOException {
-        List<Peer> peersOnline = null;
+        ArrayList<Peer> peersOnline = new ArrayList<>();
         //Setup scanner for user input
         Scanner userInput = new Scanner(System.in);
 
         // User inputs the path to the PeerInfo.cfg
+        System.out.println("PeerInfo filepath");
         String path = userInput.next();
 
         /*
@@ -168,6 +169,7 @@ https://stackoverflow.com/questions/877096/how-can-i-pass-a-parameter-to-a-java-
         LinkedHashMap<Integer, String[]> PeerInfo = readPeerInfo(path);
 
         // User inputs the path to the Common.cfg
+        System.out.println("Common filepath");
         path = userInput.next();
 
         /*
@@ -182,7 +184,7 @@ https://stackoverflow.com/questions/877096/how-can-i-pass-a-parameter-to-a-java-
          * Value: [Respective <int> value]
          */
 
-        LinkedHashMap<String, Integer> CommonInfo = readCommon(path);
+        LinkedHashMap<String, String> CommonInfo = readCommon(path);
 
 
         Set<Integer> keySetArray = PeerInfo.keySet();
@@ -234,16 +236,14 @@ https://stackoverflow.com/questions/877096/how-can-i-pass-a-parameter-to-a-java-
                 //Client client = new Client(PeerInfo.get(1001+i)[0], Integer.parseInt(PeerInfo.get(1001+i)[1]));
                 Client client = new Client();
                 client.start();
-                client.startConnection(hostname, portN);
+                client.startConnection(hostname, portN + keySet[i]);
 
                 //Handshake
                 String handshakeMessage = "P2PFILESHARINGPROJ0000000000";
                 handshakeMessage += keySet[i];
                 client.sendMessage(handshakeMessage);
-
-
                 clients[i][j] = client;
-
+                System.out.println("End of Clients for " + keySet[i] );
             }
 
         }
@@ -267,8 +267,7 @@ https://stackoverflow.com/questions/877096/how-can-i-pass-a-parameter-to-a-java-
          * TODO: Fifth, Comment everything!
          * TODO: Sixth, StartRemotePeer.?
          *
-         *
+         * Ouvuvuevuevue Enyetuenwevue Ugbemugbem Osas
          */
     }
 }
-

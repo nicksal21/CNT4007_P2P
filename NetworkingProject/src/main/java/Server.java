@@ -19,7 +19,7 @@ public class Server extends Thread { // https://www.baeldung.com/a-guide-to-java
     //Class Variable
     private ServerSocket current;
     private LinkedHashMap<Integer, String[]> pInfo;
-    private LinkedHashMap<String, Integer> cInfo;
+    private LinkedHashMap<String, String> cInfo;
 
     /*
      * Start uses the information provided by peer object and commonInfo to connect the socekets
@@ -30,7 +30,7 @@ public class Server extends Thread { // https://www.baeldung.com/a-guide-to-java
      */
 
     public void startServer(int key, int port, LinkedHashMap<Integer, String[]> peerInfo,
-                            LinkedHashMap<String, Integer> commonInfo) throws IOException {
+                            LinkedHashMap<String, String> commonInfo) throws IOException {
 
         pInfo = peerInfo;
         cInfo = commonInfo;
@@ -63,7 +63,7 @@ public class Server extends Thread { // https://www.baeldung.com/a-guide-to-java
         // Constructor
         public EchoClientHandler(Socket socket, int key) throws IOException {
             this.clientSocket = socket;
-            out = new FileOutputStream("java/project_config_file_small/project_config_file_small/" + key + "/thefile");
+            // out = new FileOutputStream("java/project_config_file_small/project_config_file_small/" + key + "/thefile");
             in = clientSocket.getInputStream();
         }
 
@@ -97,7 +97,7 @@ public class Server extends Thread { // https://www.baeldung.com/a-guide-to-java
             try {
                 // Input and Output Streams
                 InputStream in = clientSocket.getInputStream();
-                FileOutputStream out = new FileOutputStream("java/project_config_file_small/project_config_file_small/" + p.getPeerID() + "/thefile");
+                // FileOutputStream out = new FileOutputStream("java/project_config_file_small/project_config_file_small/" + p.getPeerID() + "/thefile");
 
                 /*
                  * Check if client peer is unchoked;

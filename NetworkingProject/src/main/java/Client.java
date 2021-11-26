@@ -15,27 +15,31 @@ public class Client extends Thread{
 
     //Class Variable
     private Socket clientSocket;
+    private Peer Pier; // owo
     private FileInputStream Fin;
     private OutputStream Fout;
     private InputStream in;
     private OutputStream out;
     private int PieceStart;
-    LinkedHashMap<String, Integer> cInfo;
+    LinkedHashMap<String, String> cInfo;
 
 
     // Starts client socket and IO file streams
     public void startConnection(String ip, int port) throws IOException {
-        clientSocket = new Socket("10.228.5.78", port);
+        clientSocket = new Socket("192.168.1.100", port);
         out = clientSocket.getOutputStream();
         in = clientSocket.getInputStream();
     }
 
     // Begins file connection
     public void startClient(int key, String ip, int port,
-                            LinkedHashMap<String, Integer> commonInfo) throws IOException {
+                            LinkedHashMap<String, String > commonInfo) throws IOException {
         cInfo = commonInfo;
         Fout = clientSocket.getOutputStream();
-        in = new FileInputStream("java/project_config_file_small/project_config_file_small/" + key + "/thefile");
+        /*if(Pier.getHasFile()){
+
+        }*/
+        //in = new FileInputStream("java/project_config_file_small/project_config_file_small/" + key + "/thefile");
     }
 
 
@@ -46,14 +50,14 @@ public class Client extends Thread{
         byte[][] pieces = client.getFilePieces();
 
         if (pieces[cid - Peer0Id][Piece] != 0) {
-            PieceStart = cInfo.get("PieceSize") * Piece;
+            PieceStart = Integer.parseInt(cInfo.get("PieceSize")) * Piece;
         }
     }
 
     // Send a message
     public String sendMessage(String msg) throws IOException {
         System.out.println(msg);
-        String resp = String.valueOf(in.read());
+        String resp = "";
         return resp;
     }
 
