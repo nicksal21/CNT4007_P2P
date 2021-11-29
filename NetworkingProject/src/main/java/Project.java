@@ -259,13 +259,13 @@ class Project extends Thread {
 
         /*
          * To-do list
-         * TODO: Zeroth, FINISH CLIENT DESIGN
-         * TODO: First, find a way to connect all peers to each other
-         * TODO: Second, Make a holder for the peer object to hold connects / keep track of the connections
-         * TODO: Third, Make an evaluator for information quality
-         * TODO: Fourth, Test Cases.....
+         * TODO: Zeroth, Work on implement logging for different functions
+         * TODO: First, timers et al.
+         * TODO: Second, work on messages
+         * TODO: Third, housekeeping et al.
+         * TODO: Fourth, paths or smthg
          * TODO: Fifth, Comment everything!
-         * TODO: Sixth, StartRemotePeer.?
+         * TODO: Sixth, think of good preguntas???
          *
          * Ouvuvuevuevue Enyetuenwevue Ugbemugbem Osas
          */
