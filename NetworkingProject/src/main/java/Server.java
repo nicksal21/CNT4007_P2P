@@ -39,7 +39,6 @@ public class Server extends Thread { // https://www.baeldung.com/a-guide-to-java
         while (true) {
             current = server;
             new EchoClientHandler(current.accept(), key).start();
-            System.out.println("Hi");
         }
 
     }
@@ -59,12 +58,27 @@ public class Server extends Thread { // https://www.baeldung.com/a-guide-to-java
         private InputStream in;
         private byte[] b;
         private int pieceStart = 0;
+        boolean handshake;
 
         // Constructor
         public EchoClientHandler(Socket socket, int key) throws IOException {
             this.clientSocket = socket;
-            // out = new FileOutputStream("java/project_config_file_small/project_config_file_small/" + key + "/thefile");
+            OutputStream outMsg = clientSocket.getOutputStream();
             in = clientSocket.getInputStream();
+
+            InputStreamReader hanin = new InputStreamReader(in);
+            BufferedReader handshake = new BufferedReader(hanin);
+            String handshakeMsg = "";
+
+            while(!Objects.equals(handshakeMsg, "P2PFILESHARINGPROJ0000000000"+key)) {
+                boolean checkCond = !Objects.equals(handshakeMsg, "P2PFILESHARINGPROJ0000000000"+key);
+                handshakeMsg = handshake.readLine();
+            }
+
+
+            PrintWriter pr = new PrintWriter(outMsg);
+            pr.println(handshakeMsg);
+            pr.flush();
         }
 
         // Close all streams and sockets on peer exit

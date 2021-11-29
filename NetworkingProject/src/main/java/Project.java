@@ -243,8 +243,8 @@ class Project extends Thread {
                 handshakeMessage += keySet[i];
                 client.sendMessage(handshakeMessage);
                 clients[i][j] = client;
-                System.out.println("End of Clients for " + keySet[i] );
             }
+            System.out.println("End of Clients for " + keySet[i] );
 
         }
 

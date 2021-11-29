@@ -56,8 +56,19 @@ public class Client extends Thread{
 
     // Send a message
     public String sendMessage(String msg) throws IOException {
-        System.out.println(msg);
+        //System.out.println(msg);
         String resp = "";
+
+        PrintWriter pr = new PrintWriter(clientSocket.getOutputStream());
+        pr.println(msg);
+        pr.flush();
+
+        in = clientSocket.getInputStream();
+        InputStreamReader hanin = new InputStreamReader(in);
+        BufferedReader handshake = new BufferedReader(hanin);
+        resp = handshake.readLine();
+
+        System.out.println(resp);
         return resp;
     }
 

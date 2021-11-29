@@ -32,12 +32,13 @@ public class Peer {
     private boolean wantToClose;
     private Server server;
     private Client[] clients;
+    private FileConverter fc;
     private LinkedHashMap<Integer, Byte[]> peerBitfields;
 
 
     // This is the constructor of the class Peer
     public Peer(int key, LinkedHashMap<Integer, String[]> peerInfo, LinkedHashMap<String,
-            String> commonInfo, Server server, Client[] clients) {
+            String> commonInfo, Server server, Client[] clients) throws IOException {
         //Sets all peer object variable to the info obtained from reading peerInfo.cfg and commonInfo.cfg
         hostName = peerInfo.get(key)[0];
         listeningPort = Integer.parseInt(peerInfo.get(key)[1]);
@@ -60,7 +61,7 @@ public class Peer {
 
 
 
-        setFilePieces(Integer.parseInt(commonInfo.get("FileSize")), Integer.parseInt(commonInfo.get("PieceSize")));
+        setFilePieces(commonInfo, hasFile, key);
     }
 
 
@@ -84,16 +85,16 @@ public class Peer {
      * Function:
      * Sets up the byte array with the correct number of columns using the number of pieces within a file
      */
-    public void setFilePieces(int fileSize, int pieceSize) {
-        int numPieces;
+    public void setFilePieces(LinkedHashMap<String,
+            String> commonInfo, boolean hasFile, int key ) throws IOException {
 
-        if (fileSize % pieceSize != 0)
-            numPieces = fileSize / pieceSize + 1;
+        int PieceSize = Integer.parseInt(commonInfo.get("PieceSize"));
+        int fileSize = Integer.parseInt(commonInfo.get("FileSize"));
+
+        if(hasFile)
+            filePieces = fc.fileToByte("src/main/java/project_config_file_small/project_config_file_small/"+key+"/thefile", commonInfo);
         else
-            numPieces = fileSize / pieceSize;
-
-
-        filePieces = new byte[numPieces][];
+            filePieces = new byte[(int)Math.ceil((double) fileSize/PieceSize)][PieceSize];
     }
 
     // Sets Client Sockets

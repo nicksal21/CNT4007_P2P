@@ -15,12 +15,13 @@ public class FileConverter {
         int fileSize = Integer.parseInt(common.get("FileSize"));
         byte[] fileCont = fileCon.readAllBytes();
         byte[][] bInF = new byte[(int)Math.ceil((double) fileSize/PieceSize)][PieceSize];
+
         for(int i = 0; i < fileSize; i++)
-            bInF[(int)Math.floor((double) fileSize/PieceSize)][i%PieceSize] = fileCont[i];
+            bInF[(int)Math.floor((double) i/PieceSize)][i%PieceSize] = fileCont[i];
         fileCon.close();
         return bInF;
     }
-    //
+    // owo
     public static void byteToFile (byte[][] fBytArray, String saveLoc, LinkedHashMap<String, String> common) throws IOException{
         int PieceSize = Integer.parseInt(common.get("PieceSize"));
         int fileSize = Integer.parseInt(common.get("FileSize"));
