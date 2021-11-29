@@ -21,7 +21,13 @@ public class FileConverter {
         return bInF;
     }
     //
-    public static void byteToFile (byte[] fBytes, String saveLoc) throws IOException{
+    public static void byteToFile (byte[][] fBytArray, String saveLoc, LinkedHashMap<String, String> common) throws IOException{
+        int PieceSize = Integer.parseInt(common.get("PieceSize"));
+        int fileSize = Integer.parseInt(common.get("FileSize"));
+        byte[] fBytes = new byte[fileSize];
+        for(int i = 0; i < fileSize; i++)
+            fBytes[i] = fBytArray[(int)Math.floor((double) fileSize/PieceSize)][i%PieceSize];
+
         try(FileOutputStream byteToF= new FileOutputStream(saveLoc)){
             byteToF.write(fBytes);
             byteToF.close();
