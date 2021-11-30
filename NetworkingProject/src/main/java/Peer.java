@@ -92,7 +92,9 @@ public class Peer {
         int fileSize = Integer.parseInt(commonInfo.get("FileSize"));
 
         if(hasFile)
-            filePieces = fc.fileToByte("src/main/java/project_config_file_small/project_config_file_small/"+key+"/thefile", commonInfo);
+            //filePieces = fc.fileToByte("src/main/java/project_config_file_small/project_config_file_small/"+key+"/thefile", commonInfo);
+            filePieces = fc.fileToByte(new File("NetworkingProject\\src\\main\\java\\project_config_file_small\\project_config_file_small\\"+key+"\\thefile").getCanonicalPath(), commonInfo);
+
         else
             filePieces = new byte[(int)Math.ceil((double) fileSize/PieceSize)][PieceSize];
     }
