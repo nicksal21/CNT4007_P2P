@@ -5,6 +5,7 @@ package main.java;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.*;
 
 /*
@@ -152,12 +153,12 @@ class Project extends Thread {
     public static void main(String[] args) throws IOException {
         ArrayList<Peer> peersOnline = new ArrayList<>();
         //Setup scanner for user input
-        Scanner userInput = new Scanner(System.in);
+        //Scanner userInput = new Scanner(System.in);
 
         // User inputs the path to the PeerInfo.cfg
-        System.out.println("PeerInfo filepath");
-        String path = userInput.next();
-
+        //System.out.println("PeerInfo filepath");
+        //String path = userInput.next();
+        String path = new File("NetworkingProject/src/main/java/project_config_file_small/project_config_file_small/PeerInfo.cfg").getCanonicalPath();
         /*
          * PeerInfo.cfg Map Legend
          * Key - Peer ID <String>
@@ -169,9 +170,9 @@ class Project extends Thread {
         LinkedHashMap<Integer, String[]> PeerInfo = readPeerInfo(path);
 
         // User inputs the path to the Common.cfg
-        System.out.println("Common filepath");
-        path = userInput.next();
-
+        //System.out.println("Common filepath");
+        //path = userInput.next();
+        path = new File("NetworkingProject/src/main/java/project_config_file_small/project_config_file_small/Common.cfg").getCanonicalPath();
         /*
          * Common.cfg Map Legend
          * Keys: <String>
