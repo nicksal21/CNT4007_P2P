@@ -72,7 +72,7 @@ public class Peer {
      *    -Make this function apply to more than one peer
      *     use a list or map of some sort
      */
-    public void setIsChoked(int peerID, boolean choked) {
+    public synchronized void setIsChoked(int peerID, boolean choked) {
         //PeerID -1001 is needed since Array Starts at 0
         isChoked[peerID - 1001] = choked;
     }
@@ -85,7 +85,7 @@ public class Peer {
      * Function:
      * Sets up the byte array with the correct number of columns using the number of pieces within a file
      */
-    public void setFilePieces(LinkedHashMap<String,
+    public synchronized void setFilePieces(LinkedHashMap<String,
             String> commonInfo, boolean hasFile, int key ) throws IOException {
 
         int PieceSize = Integer.parseInt(commonInfo.get("PieceSize"));
@@ -100,54 +100,54 @@ public class Peer {
     }
 
     // Sets Client Sockets
-    public void setClientSockets(Client[] clients) {
+    public synchronized void setClientSockets(Client[] clients) {
         this.clients = clients;
     }
 
     // Sets Server Sockets
-    public void setServerSockets(Server server) {
+    public synchronized void setServerSockets(Server server) {
         this.server = server;
     }
 
     //*********************************** GET Functions ***********************************//
     // Returns the array with all who is choked or not
-    public boolean[] getChokedPeer() {
+    public synchronized boolean[] getChokedPeer() {
         return isChoked;
     }
 
     // Returns a boolean for if the peer wants to end its connections
-    public boolean getWantToClose() {
+    public synchronized boolean getWantToClose() {
         return wantToClose;
     }
 
     // Returns if the peer has the complete file or not
-    public boolean getHasFile() {
+    public synchronized boolean getHasFile() {
         return hasFile;
     }
 
     // Get pieces of file
-    public byte[][] getFilePieces() {
+    public synchronized byte[][] getFilePieces() {
         return filePieces;
     }
 
     // Returns the listing port of the peer
-    public int getListeningPort() {
+    public synchronized int getListeningPort() {
         return listeningPort;
     }
 
     // Returns the peer's ID number
-    public int getPeerID() {
+    public synchronized int getPeerID() {
         return peerID;
     }
 
     // Returns all the peer's client sockets
-    public Client[] getClients() { return clients; }
+    public synchronized Client[] getClients() { return clients; }
 
     // Returns all the peer's server sockets
-    public Server getServer() { return server; }
+    public synchronized Server getServer() { return server; }
 
     // Return Peers host name
-    public String getHostName() {
+    public synchronized String getHostName() {
         return hostName;
     }
 
@@ -160,7 +160,7 @@ public class Peer {
      * Function:
      * Takes in a message type and outputs the corresponding message
      */
-    public void interpretMessage(int OtherPeer, byte[] message) {
+    public synchronized void interpretMessage(int OtherPeer, byte[] message) {
         byte messageType = message[4];
         switch (messageType) {
             case 0:
@@ -225,7 +225,7 @@ public class Peer {
      *   [9] - Peer1 finishes downloading a piece from Peer2
      *   [10] - Peer1 has downloaded the complete file
      */
-    public void writeLogMessage(int Peer2, int[] prefNeighbors, int pieceIndex, int numPieces, int msgType) {
+    public synchronized void writeLogMessage(int Peer2, int[] prefNeighbors, int pieceIndex, int numPieces, int msgType) {
         try {
             int peer2ID = Peer2;
             String path = "/log_peer_" + peer2ID + ".log";
@@ -281,7 +281,7 @@ public class Peer {
     }
 
     // Print the Peer details
-    public void printPeerInfo() {
+    public synchronized void printPeerInfo() {
         System.out.println("*******Peer Information*******");
         System.out.println("Peer ID:" + peerID);
         System.out.println("Hostname:" + hostName);
