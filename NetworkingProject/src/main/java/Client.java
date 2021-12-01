@@ -26,7 +26,8 @@ public class Client extends Thread{
 
     // Starts client socket and IO file streams
     public void startConnection(String ip, int port) throws IOException {
-        clientSocket = new Socket("192.168.1.100", port);
+        //clientSocket = new Socket("192.168.1.100", port);
+        clientSocket = new Socket("10.140.109.23", port);
         out = clientSocket.getOutputStream();
         in = clientSocket.getInputStream();
     }
@@ -70,6 +71,18 @@ public class Client extends Thread{
 
         System.out.println(resp);
         return resp;
+    }
+
+    // Send a message
+    public void sendRequest(byte[] req) throws IOException {
+
+        if (req.length < 0)
+            throw new IllegalArgumentException("Negative length not allowed");
+        OutputStream out = clientSocket.getOutputStream();
+        DataOutputStream sndReq = new DataOutputStream(out);
+        sndReq.writeInt(req.length);
+        sndReq.write(req,0,req.length);
+
     }
 
     // Close file streams and client sockets

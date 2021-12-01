@@ -141,14 +141,10 @@ public class Peer {
     }
 
     // Returns all the peer's client sockets
-    public Client[] getClients() {
-        return clients;
-    }
+    public Client[] getClients() { return clients; }
 
     // Returns all the peer's server sockets
-    public Server getServer() {
-        return server;
-    }
+    public Server getServer() { return server; }
 
     // Return Peers host name
     public String getHostName() {
@@ -164,7 +160,8 @@ public class Peer {
      * Function:
      * Takes in a message type and outputs the corresponding message
      */
-    public void interpretMessage(Peer OtherPeer, byte messageType) {
+    public void interpretMessage(int OtherPeer, byte[] message) {
+        byte messageType = message[4];
         switch (messageType) {
             case 0:
                 // CHOKE - Set isChoked to true
@@ -228,9 +225,9 @@ public class Peer {
      *   [9] - Peer1 finishes downloading a piece from Peer2
      *   [10] - Peer1 has downloaded the complete file
      */
-    public void writeLogMessage(Peer Peer2, int[] prefNeighbors, int pieceIndex, int numPieces, int msgType) {
+    public void writeLogMessage(int Peer2, int[] prefNeighbors, int pieceIndex, int numPieces, int msgType) {
         try {
-            int peer2ID = Peer2.peerID;
+            int peer2ID = Peer2;
             String path = "/log_peer_" + peer2ID + ".log";
             File f1 = new File(path);
             FileWriter fileWriter = new FileWriter(f1.getName(), true);

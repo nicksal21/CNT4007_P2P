@@ -130,10 +130,12 @@ class Project extends Thread {
         Server Peer;
         int key;
         int port;
-        PeerServer(Server peer, int k, int p){
+        Peer sPeer;
+        PeerServer(Server peer, int k, int p, Peer serverP){
             key = k;
             port = p;
             Peer = peer;
+            sPeer = serverP;
         }
         @Override
         public void run(){
@@ -141,7 +143,7 @@ class Project extends Thread {
             System.out.println("Server " + key + " " + port + " is running");
 
             try {
-                Peer.startServer(key, port+key, PeerInfo, CommonInfo);
+                Peer.startServer(key, port+key, PeerInfo, CommonInfo, sPeer);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -217,6 +219,15 @@ class Project extends Thread {
         Thread[] threads = new Thread[keySet.length];
         Client[][] clients = new Client[keySet.length][keySet.length];
 
+        /*
+         * This for loop is responsible for creating peer objects which
+         * will contain all the necessary information that our Peer-2-Peer
+         * network will be utilizing
+         */
+        for (int i = 0; i < keySet.length; i++) {
+            peersOnline.add(new Peer(1001 + i, PeerInfo, CommonInfo, servers[i], clients[i]));
+        }
+
         //Starting severs in different threads
         for (int k = 0; k < keySet.length; k++) {
             int key = 1001 + k;
@@ -226,9 +237,10 @@ class Project extends Thread {
             //ServerSocket serverSocket =
             servers[k] = new Server();
             //Making threads for servers
-            threads[k] = new Thread(new PeerServer(servers[k],key,port));
+            threads[k] = new Thread(new PeerServer(servers[k],key,port,peersOnline.get(k)));
             threads[k].start();
         }
+
 
         for (int i = 0; i < keySet.length; i++) {
             for (int j = 0; j < keySet.length - 1; j++) {
@@ -248,15 +260,23 @@ class Project extends Thread {
             System.out.println("End of Clients for " + keySet[i] );
 
         }
+        for (int i = 0; i < keySet.length; i++){
+            peersOnline.get(i).setClientSockets(clients[i]);
+            peersOnline.get(i).setServerSockets(servers[i]);
+
+        }
+
+        byte[] test = new byte[]{0,0,0,1,0};
+        clients[0][0].sendRequest(test);
+
+        boolean pause = true;
 
         /*
-         * This for loop is responsible for creating peer objects which
-         * will contain all the necessary information that our Peer-2-Peer
-         * network will be utilizing
+            Set a loop that uses clients to send requests to peers
+            Server handles request and uses their client to do something
          */
-        for (int i = 0; i < keySet.length; i++) {
-            peersOnline.add(new Peer(1001 + i, PeerInfo, CommonInfo, servers[i], clients[i]));
-        }
+
+
 
         /*
          * To-do list

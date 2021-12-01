@@ -20,6 +20,7 @@ public class Server extends Thread { // https://www.baeldung.com/a-guide-to-java
     private ServerSocket current;
     private LinkedHashMap<Integer, String[]> pInfo;
     private LinkedHashMap<String, String> cInfo;
+    public Peer sPeer;
 
     /*
      * Start uses the information provided by peer object and commonInfo to connect the socekets
@@ -30,15 +31,16 @@ public class Server extends Thread { // https://www.baeldung.com/a-guide-to-java
      */
 
     public void startServer(int key, int port, LinkedHashMap<Integer, String[]> peerInfo,
-                            LinkedHashMap<String, String> commonInfo) throws IOException {
+                            LinkedHashMap<String, String> commonInfo, Peer serverP) throws IOException {
 
         pInfo = peerInfo;
         cInfo = commonInfo;
         ServerSocket server = new ServerSocket(port);
+        sPeer = serverP;
 
         while (true) {
             current = server;
-            new EchoClientHandler(current.accept(), key).start();
+            new EchoClientHandler(current.accept(), key, sPeer).start();
         }
 
     }
@@ -56,29 +58,16 @@ public class Server extends Thread { // https://www.baeldung.com/a-guide-to-java
         private Socket clientSocket;
         private FileOutputStream out;
         private InputStream in;
-        private byte[] b;
+        public Peer ServerPeer;
         private int pieceStart = 0;
+        private int Clientkey;
         boolean handshake;
 
         // Constructor
-        public EchoClientHandler(Socket socket, int key) throws IOException {
+        public EchoClientHandler(Socket socket, int k, Peer serverP) throws IOException {
             this.clientSocket = socket;
-            OutputStream outMsg = clientSocket.getOutputStream();
-            in = clientSocket.getInputStream();
-
-            InputStreamReader hanin = new InputStreamReader(in);
-            BufferedReader handshake = new BufferedReader(hanin);
-            String handshakeMsg = "";
-
-            while(!Objects.equals(handshakeMsg, "P2PFILESHARINGPROJ0000000000"+key)) {
-                boolean checkCond = !Objects.equals(handshakeMsg, "P2PFILESHARINGPROJ0000000000"+key);
-                handshakeMsg = handshake.readLine();
-            }
-
-
-            PrintWriter pr = new PrintWriter(outMsg);
-            pr.println(handshakeMsg);
-            pr.flush();
+            Clientkey = k;
+            ServerPeer = serverP;
         }
 
         // Close all streams and sockets on peer exit
@@ -119,10 +108,10 @@ public class Server extends Thread { // https://www.baeldung.com/a-guide-to-java
                  */
                 while (!p.getChokedPeer()[p.getPeerID() - 1001]) {
                     // Reads the input stream
-                    in.read(b, 0, b.length);
+                    //in.read(b, 0, b.length);
                     // TODO: Use "b" so peer doesn't get stuck reading/writing from same location
                     // Writes the File output stream
-                    out.write(b, pieceStart, b.length);
+                    //out.write(b, pieceStart, b.length);
                 }
 
                 // Checks to see if the peer wants to close its connections
@@ -136,6 +125,48 @@ public class Server extends Thread { // https://www.baeldung.com/a-guide-to-java
                 e.printStackTrace();
             }
         }
+        @Override
+        public void run() {
+
+            try {
+                OutputStream outMsg = clientSocket.getOutputStream();
+                in = clientSocket.getInputStream();
+
+                InputStreamReader inMsg = new InputStreamReader(in);
+                BufferedReader MsgRead = new BufferedReader(inMsg);
+                String handshakeMsg = "";
+
+                while(!Objects.equals(handshakeMsg, "P2PFILESHARINGPROJ0000000000"+Clientkey)) {
+                    //boolean checkCond = !Objects.equals(handshakeMsg, "P2PFILESHARINGPROJ0000000000"+key);
+                    handshakeMsg = MsgRead.readLine();
+                }
+
+
+                PrintWriter pr = new PrintWriter(outMsg);
+                pr.println(handshakeMsg);
+                pr.flush();
+                DataInputStream sentReq = new DataInputStream(in);
+                int cReqLength = sentReq.readInt();
+                byte[] MsgReq = new byte[cReqLength];
+                sentReq.readFully(MsgReq);
+                while(true){
+
+                    ServerPeer.interpretMessage(Clientkey,MsgReq);
+                    cReqLength = sentReq.readInt();
+                    MsgReq = new byte[cReqLength];
+                    sentReq.readFully(MsgReq);
+
+
+                }
+
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
+        }
+
     }
 }
 

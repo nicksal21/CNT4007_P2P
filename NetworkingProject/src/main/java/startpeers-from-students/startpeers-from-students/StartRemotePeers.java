@@ -1,4 +1,4 @@
-
+/*
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -61,7 +61,7 @@ String ciseUser = "rvaz"; // change with your CISE username
 * folder.
 */
 
-
+/*
 peerList.add(new PeerInfo("1", "lin114-06.cise.ufl.edu"));
 peerList.add(new PeerInfo("2", "lin114-08.cise.ufl.edu"));
 peerList.add(new PeerInfo("3", "lin114-09.cise.ufl.edu"));
@@ -78,7 +78,7 @@ JSch jsch = new JSch();
 * without a password. Or you can use the corressponding method
 * of JSch which accepts a password.
 */
-
+/*
 jsch.addIdentity("C:\\Users\\vazra\\.ssh\\private", "");
 Session session = jsch.getSession(ciseUser, remotePeer.getHostName(), 22);
 Properties config = new Properties();
@@ -140,4 +140,4 @@ ex.printStackTrace();
 }
 
 }
-
+*/
