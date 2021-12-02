@@ -173,8 +173,8 @@ class Project extends Thread {
             byte[] message;
 
             if(ClientPeer.getHasFile()) {
-                message = ClientPeer.getBitFieldMessage();
-                for (int i = 0; i < cPeer.length-1; i++) {
+
+                for (int i = 0; i < cPeer.length; i++) {
                     try {
                         cPeer[i].sendRequest(message);
                     } catch (IOException e) {

@@ -2,7 +2,6 @@ package main.java;
 
 // Imports
 
-import javax.swing.*;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -10,8 +9,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.time.LocalTime;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.BitSet;
+import java.util.LinkedHashMap;
 
 /*
  * Peer Object
@@ -346,9 +345,10 @@ public class Peer {
                 boolean intestedINPeer = false;
                 //BitSet RecievedM = BitSet.valueOf(message);
                 //BitSet BitFiled = BitSet.valueOf(bFieldResp)
-                for (int i = 0; i < message.length; i++){
-                    if(bFieldResp[i] < message[i])
-                        intestedINPeer = true;
+                for (int i = 0; i < message.length; i++) {
+                        if (isSet(bFieldResp, i) != isSet(message, i))
+                            intestedINPeer = true;
+
                 }
                 isInterested[OtherPeer-1001] = intestedINPeer;
 
@@ -385,6 +385,12 @@ public class Peer {
                 System.out.println("Piece");
                 break;
         }
+    }
+
+    public boolean isSet(byte[] bitArr, int bit) {
+        int i = bit / 8;
+        int bitPos = bit % 8;
+        return (bitArr[i] >> bitPos & 1) == 1;
     }
 
     public synchronized byte[] generateMessage() {
