@@ -21,13 +21,20 @@ public class Client extends Thread{
     private InputStream in;
     private OutputStream out;
     private int PieceStart;
+    private int ServerId;
     LinkedHashMap<String, String> cInfo;
+
+    Client(Peer p){
+
+        Pier = p;
+
+    }
 
 
     // Starts client socket and IO file streams
     public void startConnection(String ip, int port) throws IOException {
         //clientSocket = new Socket("10.2.0.224", port);
-         clientSocket = new Socket("10.140.109.23", port);
+         clientSocket = new Socket("10.136.2.24", port);
         out = clientSocket.getOutputStream();
         in = clientSocket.getInputStream();
     }
@@ -56,7 +63,7 @@ public class Client extends Thread{
     }
 
     // Send a message
-    public String sendMessage(String msg) throws IOException {
+    public String handMessage(String msg) throws IOException {
         //System.out.println(msg);
         String resp = "";
 
@@ -68,8 +75,9 @@ public class Client extends Thread{
         InputStreamReader hanin = new InputStreamReader(in);
         BufferedReader handshake = new BufferedReader(hanin);
         resp = handshake.readLine();
-
-        System.out.println(resp);
+        if(!Objects.equals(resp, "P2PFILESHARINGPROJ0000000000"+Pier.getPeerID()))
+            System.out.println(resp);
+        ServerId = Integer.parseInt(resp.substring(28,32));
         return resp;
     }
 
@@ -92,21 +100,5 @@ public class Client extends Thread{
         clientSocket.close();
     }
 
-    // Testing
-    public void givenClient2_whenServerResponds_thenCorrect() throws IOException {
-        Client client2 = new Client();
-        client2.startConnection("10.228.5.78", 5555); // Contain the actual connection and handshake
 
-        // Bit field
-        String msg1 = client2.sendMessage("hello");
-        String msg2 = client2.sendMessage("world");
-        String terminate = client2.sendMessage(".");
-
-        /*
-         * Tests
-         * assertEquals(msg1, "hello");
-         * assertEquals(msg2, "world");
-         * assertEquals(terminate, "bye");
-         */
-    }
 }

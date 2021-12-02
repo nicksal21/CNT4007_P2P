@@ -61,12 +61,13 @@ public class Server extends Thread { // https://www.baeldung.com/a-guide-to-java
         public Peer ServerPeer;
         private int pieceStart = 0;
         private int Clientkey;
+        private int ServerKey;
         boolean handshake;
 
         // Constructor
         public EchoClientHandler(Socket socket, int k, Peer serverP) throws IOException {
             this.clientSocket = socket;
-            Clientkey = k;
+            ServerKey = k;
             ServerPeer = serverP;
         }
 
@@ -135,13 +136,17 @@ public class Server extends Thread { // https://www.baeldung.com/a-guide-to-java
                 InputStreamReader inMsg = new InputStreamReader(in);
                 BufferedReader MsgRead = new BufferedReader(inMsg);
                 String handshakeMsg = "";
+                boolean hand = false;
 
-                while(!Objects.equals(handshakeMsg, "P2PFILESHARINGPROJ0000000000"+Clientkey)) {
+                while(!hand) {
                     //boolean checkCond = !Objects.equals(handshakeMsg, "P2PFILESHARINGPROJ0000000000"+key);
                     handshakeMsg = MsgRead.readLine();
+                    if(!handshakeMsg.isEmpty())
+                        hand = Objects.equals(handshakeMsg.substring(0,28), "P2PFILESHARINGPROJ0000000000");
                 }
 
-
+                Clientkey = Integer.parseInt(handshakeMsg.substring(28,32));
+                handshakeMsg = handshakeMsg.substring(0,28)+ServerKey;
                 PrintWriter pr = new PrintWriter(outMsg);
                 pr.println(handshakeMsg);
                 pr.flush();
@@ -149,6 +154,7 @@ public class Server extends Thread { // https://www.baeldung.com/a-guide-to-java
                 int cReqLength = sentReq.readInt();
                 byte[] MsgReq = new byte[cReqLength];
                 sentReq.readFully(MsgReq);
+
                 while(true){
 
                     ServerPeer.interpretMessage(Clientkey,MsgReq);

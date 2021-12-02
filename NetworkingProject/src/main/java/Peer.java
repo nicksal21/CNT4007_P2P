@@ -197,7 +197,7 @@ public class Peer {
         for (int i = 0; i < hasPieces.length; i++) {
             if (hasPieces[i]) {
                 //bitfield[(int) Math.floor((double) i / 8)] |= 1 << (7 - i % 8);
-                bitSet.set((int) Math.pow(2, b) - i);
+                bitSet.set((int) Math.pow(2, b) - i, true);
             }
             else
                 bitSet.set((int) Math.pow(2, b) - i,false);
@@ -304,22 +304,22 @@ public class Peer {
         switch (messageType) {
             case 0:
                 // CHOKE - Set isChoked to true
-                isChoked[peerID - 1001] = true;
+                isChoked[OtherPeer - 1001] = true;
                 writeLogMessage(OtherPeer, null, 0, 0, 5);
                 break;
             case 1:
                 // UNCHOKE - Set isChoked to false
-                isChoked[peerID - 1001] = false;
+                isChoked[OtherPeer - 1001] = false;
                 writeLogMessage(OtherPeer, null, 0, 0, 4);
                 break;
             case 2:
                 // INTERESTED - Set isInterested to true
-                isInterested[peerID - 1001] = true;
+                isInterested[OtherPeer - 1001] = true;
                 writeLogMessage(OtherPeer, null, 0, 0, 7);
                 break;
             case 3:
                 // UNINTERESTED - Set isInterested to false
-                isInterested[peerID - 1001] = false;
+                isInterested[OtherPeer - 1001] = false;
                 writeLogMessage(OtherPeer, null, 0, 0, 8);
                 break;
             case 4:
@@ -330,21 +330,27 @@ public class Peer {
                 break;
             case 5:
                 // BITFIELD
+                //As soon as a BitFieldRequest is sent
                 byte[] bFieldResp = getBitFieldMessage();
-                try {
-                    if(OtherPeer < getPeerID())
-                        clients[OtherPeer-1001].sendRequest(bFieldResp);
-                    else
-                        clients[OtherPeer-1002].sendRequest(bFieldResp);
+                if(hasFile) {
+                    try {
+                        if (OtherPeer < getPeerID())
+                            clients[OtherPeer - 1001].sendRequest(bFieldResp);
+                        else
+                            clients[OtherPeer - 1002].sendRequest(bFieldResp);
 
-                }catch (IOException e) {
-                    e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
                 boolean intestedINPeer = false;
-                for (int i = 5; i < bFieldResp.length; i++){
+                //BitSet RecievedM = BitSet.valueOf(message);
+                //BitSet BitFiled = BitSet.valueOf(bFieldResp)
+                for (int i = 0; i < message.length; i++){
                     if(bFieldResp[i] < message[i])
                         intestedINPeer = true;
                 }
+                isInterested[OtherPeer-1001] = intestedINPeer;
 
                     try {
                         if (intestedINPeer) {
@@ -369,11 +375,13 @@ public class Peer {
             case 6:
                 // REQUEST
                 // TODO: IMPLEMENT REQUEST
+                // After initial BITFIELD you need to request the pieces that are needed
                 System.out.println("Request");
                 break;
             case 7:
                 // PIECE
                 // TODO: IMPLEMENT PIECE
+                //Once recieve a piece send HAVE to all other Peers
                 System.out.println("Piece");
                 break;
         }
