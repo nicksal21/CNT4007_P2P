@@ -171,18 +171,21 @@ class Project extends Thread {
 
             System.out.println("Client " + key + " is running");
             byte[] message;
-            while (true){
-                if(ClientPeer.getHasFile()) {
-                    message = ClientPeer.getBitFieldMessage();
-                    for (int i = 0; i < cPeer.length-1; i++) {
-                        try {
-                            cPeer[i].sendRequest(message);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+
+            if(ClientPeer.getHasFile()) {
+                message = ClientPeer.getBitFieldMessage();
+                for (int i = 0; i < cPeer.length-1; i++) {
+                    try {
+                        cPeer[i].sendRequest(message);
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
             }
+
+            //while (true){
+
+           // }
 
         }
 
@@ -254,7 +257,7 @@ class Project extends Thread {
 
         Server[] servers = new Server[keySet.length];
         Thread[] threads = new Thread[keySet.length];
-        Client[][] clients = new Client[keySet.length][keySet.length];
+        Client[][] clients = new Client[keySet.length][keySet.length-1];
 
         /*
          * This for loop is responsible for creating peer objects which
@@ -280,33 +283,42 @@ class Project extends Thread {
 
 
         for (int i = 0; i < keySet.length; i++) {
+            int foundDup = 0;
             for (int j = 0; j < keySet.length - 1; j++) {
-                int portN = Integer.parseInt(PeerInfo.get(1001 + i)[1]);
-                String hostname = PeerInfo.get(1001 + i)[0];
-                //Client client = new Client(PeerInfo.get(1001+i)[0], Integer.parseInt(PeerInfo.get(1001+i)[1]));
-                Client client = new Client();
-                client.start();
-                client.startConnection(hostname, portN + keySet[i]);
+                if (keySet[j] != 1001 + i) {
+                    int portN = Integer.parseInt(PeerInfo.get(1001 + j)[1]);
+                    String hostname = PeerInfo.get(1001 + j)[0];
+                    //Client client = new Client(PeerInfo.get(1001+i)[0], Integer.parseInt(PeerInfo.get(1001+i)[1]));
+                    Client client = new Client();
+                    client.start();
+                    client.startConnection(hostname, portN + keySet[j]);
 
-                //Handshake
-                String handshakeMessage = "P2PFILESHARINGPROJ0000000000";
-                handshakeMessage += keySet[i];
-                client.sendMessage(handshakeMessage);
-                clients[i][j] = client;
+                    //Handshake
+                    String handshakeMessage = "P2PFILESHARINGPROJ0000000000";
+                    handshakeMessage += keySet[j];
+                    client.sendMessage(handshakeMessage);
+                    clients[i][j - foundDup] = client;
+                } else
+                    foundDup = 1;
+
             }
-            System.out.println("End of Clients for " + keySet[i] );
+            System.out.println("End of Clients for " + keySet[i]);
 
         }
-        for (int i = 0; i < keySet.length; i++){
+        for (int i = 0; i < keySet.length; i++) {
             peersOnline.get(i).setClientSockets(clients[i]);
             peersOnline.get(i).setServerSockets(servers[i]);
 
         }
 
-        //byte[] test = new byte[]{0,0,0,1,0};
-        //clients[0][0].sendRequest(test);
 
-        //boolean pause = true;
+
+        //byte[] test = new byte[]{0,0,0,1,0};
+        // clients[0][0].sendRequest(test);
+
+        //byte[] msg = peersOnline.get(0).pieceMessage(32);
+
+        // boolean pause = true;
 
         /*
             Set a loop that uses clients to send requests to peers
@@ -320,9 +332,10 @@ class Project extends Thread {
             //ServerSocket serverSocket =
             int key = 1001 + k;
             //Making threads for servers
-            cThreads[k] = new Thread(new PeerClientBehavior(clients[k],key,peersOnline.get(k)));
+            cThreads[k] = new Thread(new PeerClientBehavior(clients[k], key, peersOnline.get(k)));
             cThreads[k].start();
         }
+
 
 
         /*

@@ -2,6 +2,7 @@ package main.java;
 
 // Imports
 
+import javax.swing.*;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
@@ -193,12 +194,20 @@ public class Peer {
     public synchronized byte[] getBitFieldMessage() {
         int b = (int) Math.ceil(Math.log((double) fileSize / PieceSize) / Math.log(2));
         BitSet bitSet = new BitSet((int) Math.pow(2,b));
-        for (int i = 0; i < hasPieces.length; i++)
+        for (int i = 0; i < hasPieces.length; i++) {
             if (hasPieces[i]) {
                 //bitfield[(int) Math.floor((double) i / 8)] |= 1 << (7 - i % 8);
-                bitSet.set((int) Math.pow(2,b)-i);
+                bitSet.set((int) Math.pow(2, b) - i);
             }
+            else
+                bitSet.set((int) Math.pow(2, b) - i,false);
+        }
+
         byte[] bitfield = bitSet.toByteArray();
+
+        if(bitfield.length == 0){
+            bitfield = new byte[(int)Math.pow(2,b)/8+1];
+        }
 
         byte msgT = (byte) 5;
         ByteBuffer lengthBuffer = ByteBuffer.allocate(4);
@@ -321,7 +330,40 @@ public class Peer {
                 break;
             case 5:
                 // BITFIELD
-                getBitFieldMessage();
+                byte[] bFieldResp = getBitFieldMessage();
+                try {
+                    if(OtherPeer < getPeerID())
+                        clients[OtherPeer-1001].sendRequest(bFieldResp);
+                    else
+                        clients[OtherPeer-1002].sendRequest(bFieldResp);
+
+                }catch (IOException e) {
+                    e.printStackTrace();
+                }
+                boolean intestedINPeer = false;
+                for (int i = 5; i < bFieldResp.length; i++){
+                    if(bFieldResp[i] < message[i])
+                        intestedINPeer = true;
+                }
+
+                    try {
+                        if (intestedINPeer) {
+                            if(OtherPeer < getPeerID())
+                                clients[OtherPeer - 1001].sendRequest(InterestedMsg());
+                            else
+                                clients[OtherPeer - 1002].sendRequest(InterestedMsg());
+                        }
+                        else {
+                            if(OtherPeer < getPeerID())
+                                clients[OtherPeer - 1001].sendRequest(UnInterestedMsg());
+                            else
+                                clients[OtherPeer - 1002].sendRequest(UnInterestedMsg());
+                        }
+                    }catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+
                 System.out.println("Bitfield");
                 break;
             case 6:
