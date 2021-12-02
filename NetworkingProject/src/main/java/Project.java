@@ -171,7 +171,7 @@ class Project extends Thread {
 
             System.out.println("Client " + key + " is running");
             byte[] message;
-
+            message = ClientPeer.getBitFieldMessage();
             if(ClientPeer.getHasFile()) {
 
                 for (int i = 0; i < cPeer.length; i++) {

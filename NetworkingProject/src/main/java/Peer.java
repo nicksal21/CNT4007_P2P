@@ -332,15 +332,15 @@ public class Peer {
                 //As soon as a BitFieldRequest is sent
                 byte[] bFieldResp = getBitFieldMessage();
                 if(hasFile) {
-                    try {
-                        if (OtherPeer < getPeerID())
-                            clients[OtherPeer - 1001].sendRequest(bFieldResp);
-                        else
-                            clients[OtherPeer - 1002].sendRequest(bFieldResp);
+                    //try {
+                        if (OtherPeer < getPeerID()) {
+                           // clients[OtherPeer - 1001].sendRequest(bFieldResp);
+                        }
+                        else {
+                          //  clients[OtherPeer - 1002].sendRequest(bFieldResp);
+                        }
 
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    //}
                 }
                 boolean intestedINPeer = false;
                 //BitSet RecievedM = BitSet.valueOf(message);
