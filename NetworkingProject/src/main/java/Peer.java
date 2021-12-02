@@ -149,6 +149,47 @@ public class Peer {
         return filePieces;
     }
 
+    //Formats the Choke
+    public synchronized byte[] ChokeMsg(){
+        return new byte[] {0,0,0,1,0};
+    }
+
+    //Formats the UnChoke
+    public synchronized byte[] UnChokeMsg(){
+        return new byte[] {0,0,0,1,1};
+    }
+
+    //Formats the Interested
+    public synchronized byte[] InterestedMsg(){
+        return new byte[] {0,0,0,1,2};
+    }
+
+    //Formats the UnInterested
+    public synchronized byte[] UnInterestedMsg(){
+        return new byte[] {0,0,0,1,3};
+    }
+
+    //Formats the Have Message
+    public synchronized byte[] haveMsg(int hasIndex){
+
+        byte[] mL= ByteBuffer.allocate(4).putInt(5).array();
+        byte mT = (byte) 4;
+        byte[] payload = ByteBuffer.allocate(4).putInt(hasIndex).array();
+        byte[] hasM = new byte[9];
+        for (int i = 0; i<9; i++){
+            if(i < 4)
+                hasM[i] = mL[i];
+            else if (i==4)
+                hasM[i] = mT;
+            else
+                hasM[i] = payload[i-5];
+        }
+        return hasM;
+
+
+    }
+
+    //Calculates the bitfield and formats the message
     public synchronized byte[] getBitFieldMessage() {
         int b = (int) Math.ceil(Math.log((double) fileSize / PieceSize) / Math.log(2));
         BitSet bitSet = new BitSet((int) Math.pow(2,b));
@@ -176,6 +217,43 @@ public class Peer {
         }
         return bfmsg;
 
+    }
+
+    //Creates the request message to be sent
+    public synchronized byte[] requestMessage(int pieceReq){
+        byte[] mL= ByteBuffer.allocate(4).putInt(5).array();
+        byte mT = (byte) 6;
+        byte[] payload = ByteBuffer.allocate(4).putInt(pieceReq).array();
+        byte[] reqM = new byte[9];
+        for (int i = 0; i<9; i++){
+            if(i < 4)
+                reqM[i] = mL[i];
+            else if (i==4)
+                reqM[i] = mT;
+            else
+                reqM[i] = payload[i-5];
+        }
+        return reqM;
+    }
+
+    //Similar to request Message, but incorporates the entire piece into the bitfield
+    public synchronized byte[] pieceMessage(int pieceReq){
+        byte mT = (byte) 7;
+        byte[] pieceData = filePieces[pieceReq];
+        byte[] Indexload = ByteBuffer.allocate(4).putInt(pieceReq).array();
+        byte[] mL= ByteBuffer.allocate(4).putInt(5+pieceData.length).array();
+        byte[] reqM = new byte[9+pieceData.length];
+        for (int i = 0; i<reqM.length; i++){
+            if(i < 4)
+                reqM[i] = mL[i];
+            else if (i==4)
+                reqM[i] = mT;
+            else if(i<9)
+                reqM[i] = Indexload[i-5];
+            else
+                reqM[i] = pieceData[i-9];
+        }
+        return reqM;
     }
 
     // Returns the listing port of the peer
