@@ -6,9 +6,11 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.BitSet;
 
 /*
  * Peer Object
@@ -28,12 +30,15 @@ public class Peer {
     private boolean hasFile;
     private boolean[] isChoked;
     private boolean[] isInterested;
+    private boolean[] hasPieces;
     private byte[][] filePieces;
     private boolean wantToClose;
     private Server server;
     private Client[] clients;
     private FileConverter fc;
     private LinkedHashMap<Integer, Byte[]> peerBitfields;
+    int PieceSize;
+    int fileSize;
 
 
     // This is the constructor of the class Peer
@@ -58,7 +63,6 @@ public class Peer {
         wantToClose = false;
         this.server = server;
         this.clients = clients;
-
 
 
         setFilePieces(commonInfo, hasFile, key);
@@ -86,18 +90,33 @@ public class Peer {
      * Sets up the byte array with the correct number of columns using the number of pieces within a file
      */
     public synchronized void setFilePieces(LinkedHashMap<String,
-            String> commonInfo, boolean hasFile, int key ) throws IOException {
+            String> commonInfo, boolean hasFile, int key) throws IOException {
 
-        int PieceSize = Integer.parseInt(commonInfo.get("PieceSize"));
-        int fileSize = Integer.parseInt(commonInfo.get("FileSize"));
+        PieceSize = Integer.parseInt(commonInfo.get("PieceSize"));
+        fileSize = Integer.parseInt(commonInfo.get("FileSize"));
+        hasPieces = new boolean[(int) Math.ceil((double) fileSize / PieceSize)];
 
-        if(hasFile)
+        Arrays.fill(hasPieces, false);
+
+        if (hasFile) {
             //filePieces = fc.fileToByte("src/main/java/project_config_file_small/project_config_file_small/"+key+"/thefile", commonInfo);
-            filePieces = fc.fileToByte(new File("NetworkingProject\\src\\main\\java\\project_config_file_small\\project_config_file_small\\"+key+"\\thefile").getCanonicalPath(), commonInfo);
+            filePieces = fc.fileToByte(new File("NetworkingProject\\src\\main\\java\\project_config_file_small\\project_config_file_small\\" + key + "\\thefile").getCanonicalPath(), commonInfo);
+            for (int i = 0; i < (int) Math.ceil((double) fileSize / PieceSize); i++) {
+                hasPieces[i] = true;
+            }
 
-        else
-            filePieces = new byte[(int)Math.ceil((double) fileSize/PieceSize)][PieceSize];
+        } else
+            filePieces = new byte[(int) Math.ceil((double) fileSize / PieceSize)][PieceSize];
     }
+
+    //This function is responcible for setting the individual pieces when recieved
+    public synchronized void setPiece(int pieceNum, byte[] piece) throws IOException {
+
+        hasPieces[pieceNum] = true;
+        filePieces[pieceNum] = piece;
+
+    }
+
 
     // Sets Client Sockets
     public synchronized void setClientSockets(Client[] clients) {
@@ -130,6 +149,35 @@ public class Peer {
         return filePieces;
     }
 
+    public synchronized byte[] getBitFieldMessage() {
+        int b = (int) Math.ceil(Math.log((double) fileSize / PieceSize) / Math.log(2));
+        BitSet bitSet = new BitSet((int) Math.pow(2,b));
+        for (int i = 0; i < hasPieces.length; i++)
+            if (hasPieces[i]) {
+                //bitfield[(int) Math.floor((double) i / 8)] |= 1 << (7 - i % 8);
+                bitSet.set((int) Math.pow(2,b)-i);
+            }
+        byte[] bitfield = bitSet.toByteArray();
+
+        byte msgT = (byte) 5;
+        ByteBuffer lengthBuffer = ByteBuffer.allocate(4);
+        lengthBuffer.putInt(1 + bitfield.length);
+        byte[] msgL = lengthBuffer.array();
+
+        byte[] bfmsg = new byte[5 + bitfield.length];
+        for (int i = 0; i < bfmsg.length; i++) {
+            if (i < 4) {
+                bfmsg[i] = msgL[i];
+            } else if (i == 4) {
+                bfmsg[i] = msgT;
+            } else {
+                bfmsg[i] = bitfield[i - 5];
+            }
+        }
+        return bfmsg;
+
+    }
+
     // Returns the listing port of the peer
     public synchronized int getListeningPort() {
         return listeningPort;
@@ -141,10 +189,14 @@ public class Peer {
     }
 
     // Returns all the peer's client sockets
-    public synchronized Client[] getClients() { return clients; }
+    public synchronized Client[] getClients() {
+        return clients;
+    }
 
     // Returns all the peer's server sockets
-    public synchronized Server getServer() { return server; }
+    public synchronized Server getServer() {
+        return server;
+    }
 
     // Return Peers host name
     public synchronized String getHostName() {
@@ -191,7 +243,7 @@ public class Peer {
                 break;
             case 5:
                 // BITFIELD
-                // TODO: IMPLEMENT BITFIELD
+                getBitFieldMessage();
                 System.out.println("Bitfield");
                 break;
             case 6:
@@ -207,6 +259,9 @@ public class Peer {
         }
     }
 
+    public synchronized byte[] generateMessage() {
+        return null;
+    }
 
     /*
      * writeLogMessage:
@@ -236,37 +291,37 @@ public class Peer {
             LocalTime time = LocalTime.now();
             switch (msgType) {
                 case 0:
-                    data = time + ": Peer " + peerID + " makes a connection to Peer " + peer2ID + ".";
+                    data = time + ": Peer " + peerID + " makes a connection to Peer " + peer2ID + ".\n";
                     break;
                 case 1:
-                    data = time + ": Peer " + peerID + " is connected from Peer " + peer2ID + ".";
+                    data = time + ": Peer " + peerID + " is connected from Peer " + peer2ID + ".\n";
                     break;
                 case 2:
-                    data = time + ": Peer " + peerID + " has the preferred neighbors " + Arrays.toString(prefNeighbors) + ".";
+                    data = time + ": Peer " + peerID + " has the preferred neighbors " + Arrays.toString(prefNeighbors) + ".\n";
                     break;
                 case 3:
-                    data = time + ": Peer " + peerID + " has optimistically unchoked neighbor " + peer2ID + ".";
+                    data = time + ": Peer " + peerID + " has optimistically unchoked neighbor " + peer2ID + ".\n";
                     break;
                 case 4:
-                    data = time + ": Peer " + peerID + " is unchoked by Peer " + peer2ID + ".";
+                    data = time + ": Peer " + peerID + " is unchoked by Peer " + peer2ID + ".\n";
                     break;
                 case 5:
-                    data = time + ": Peer " + peerID + " is choked by Peer " + peer2ID + ".";
+                    data = time + ": Peer " + peerID + " is choked by Peer " + peer2ID + ".\n";
                     break;
                 case 6:
-                    data = time + ": Peer " + peerID + " received the 'have' message from " + peer2ID + " for the piece " + pieceIndex + ".";
+                    data = time + ": Peer " + peerID + " received the 'have' message from " + peer2ID + " for the piece " + pieceIndex + ".\n";
                     break;
                 case 7:
-                    data = time + ": Peer " + peerID + " received the 'interested' message from " + peer2ID + ".";
+                    data = time + ": Peer " + peerID + " received the 'interested' message from " + peer2ID + ".\n";
                     break;
                 case 8:
-                    data = time + ": Peer " + peerID + " received the 'not interested' message from " + peer2ID + ".";
+                    data = time + ": Peer " + peerID + " received the 'not interested' message from " + peer2ID + ".\n";
                     break;
                 case 9:
-                    data = time + ": Peer " + peerID + " has downloaded the piece " + pieceIndex + " from " + peer2ID + ". Now the number of pieces it has is " + numPieces + ".";
+                    data = time + ": Peer " + peerID + " has downloaded the piece " + pieceIndex + " from " + peer2ID + ". Now the number of pieces it has is " + numPieces + ".\n";
                     break;
                 case 10:
-                    data = time + ": Peer " + peerID + " has downloaded the complete file.";
+                    data = time + ": Peer " + peerID + " has downloaded the complete file.\n";
                     break;
                 default:
                     System.err.println("Error! Incorrect message type code!");

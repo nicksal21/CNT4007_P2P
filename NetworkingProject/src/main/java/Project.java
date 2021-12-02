@@ -3,8 +3,11 @@ package main.java;
 
 // Imports
 
+import com.sun.source.tree.WhileLoopTree;
+
 import java.io.File;
 import java.io.IOException;
+import java.net.Socket;
 import java.net.URL;
 import java.util.*;
 
@@ -152,6 +155,40 @@ class Project extends Thread {
 
     }
 
+
+    public static class PeerClientBehavior implements Runnable {
+        Client[] cPeer;
+        int key;
+        Peer ClientPeer;
+
+        PeerClientBehavior(Client[] peer, int k, Peer ClientP){
+            key = k;
+            cPeer = peer;
+            ClientPeer = ClientP;
+        }
+        @Override
+        public void run(){
+
+            System.out.println("Client " + key + " is running");
+            byte[] message;
+            while (true){
+                if(ClientPeer.getHasFile()) {
+                    message = ClientPeer.getBitFieldMessage();
+                    for (int i = 0; i < cPeer.length-1; i++) {
+                        try {
+                            cPeer[i].sendRequest(message);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+
+        }
+
+    }
+
+
     public static void main(String[] args) throws IOException {
         ArrayList<Peer> peersOnline = new ArrayList<>();
         //Setup scanner for user input
@@ -266,16 +303,26 @@ class Project extends Thread {
 
         }
 
-        byte[] test = new byte[]{0,0,0,1,0};
-        clients[0][0].sendRequest(test);
+        //byte[] test = new byte[]{0,0,0,1,0};
+        //clients[0][0].sendRequest(test);
 
-        boolean pause = true;
+        //boolean pause = true;
 
         /*
             Set a loop that uses clients to send requests to peers
             Server handles request and uses their client to do something
          */
 
+
+        Thread[] cThreads = new Thread[keySet.length];
+
+        for (int k = 0; k < keySet.length; k++) {
+            //ServerSocket serverSocket =
+            int key = 1001 + k;
+            //Making threads for servers
+            cThreads[k] = new Thread(new PeerClientBehavior(clients[k],key,peersOnline.get(k)));
+            cThreads[k].start();
+        }
 
 
         /*
@@ -286,7 +333,6 @@ class Project extends Thread {
          * TODO: Third, housekeeping et al.
          * TODO: Fourth, paths or smthg
          * TODO: Fifth, Comment everything!
-         * TODO: Sixth, think of good preguntas???
          *
          * Ouvuvuevuevue Enyetuenwevue Ugbemugbem Osas
          */
