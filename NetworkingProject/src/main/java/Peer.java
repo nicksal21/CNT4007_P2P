@@ -457,12 +457,87 @@ public class Peer {
                 // TODO: IMPLEMENT REQUEST
                 // After initial BITFIELD you need to request the pieces that are needed
                 System.out.println("Request");
+                if(!isChoked[OtherPeer]){
+                    byte[] OPReq = new byte[4];
+                    for (int i = 5; i < message.length; i++)
+                        OPReq[i-5] = message[i];
+
+                    int OPReqed = ByteBuffer.wrap(OPReq).getInt();
+
+                    try {
+                        if(OtherPeer < getPeerID())
+                            clients[OtherPeer - 1001].sendRequest(pieceMessage(OPReqed));
+                        else
+                            clients[OtherPeer - 1002].sendRequest(pieceMessage(OPReqed));
+
+                    }catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+
+                }
                 break;
             case 7:
                 // PIECE
                 // TODO: IMPLEMENT PIECE
+                byte[] pieceIndex = new byte[4];
+                byte[] pieceRecieved = new byte[PieceSize];
+                for (int i = 5; i < message.length; i++){
+                    if(i < 9)
+                        pieceIndex[i-5] = message[i];
+                    else
+                        pieceRecieved[i - 9] = message[i];
+                }
+                int pIndex = ByteBuffer.wrap(pieceIndex).getInt();
+                filePieces[pIndex] = pieceRecieved;
+                int availibleSlot = -1;
+                for(int i = 0; i < ReqPfromNeighbors.length; i++)
+                    if(ReqPfromNeighbors[i] == pIndex) {
+                        ReqPfromNeighbors[i] = -1;
+                        availibleSlot = i;
+                    }
+
                 //Once recieve a piece send HAVE to all other Peers
+                try {
+                    for (int i = 0; i < clients.length; i++)
+                        clients[i].sendRequest(haveMsg(pIndex));
+                }catch (IOException e){
+                    System.err.println("IOEX in Piece recieved");
+                }
+
+                if(!isChoked[OtherPeer]){
+
+                    int AdditionalP = (int) (Math.random() * fileSize/PieceSize);
+                    boolean AddReqAlready = true;
+                    while (hasPieces[OtherPeer][AdditionalP] || AddReqAlready) {
+
+                        AdditionalP = (int) (Math.random() * fileSize / PieceSize);
+                        for(int i = 0; i < ReqPfromNeighbors.length; i++) {
+                            if (ReqPfromNeighbors[i] != AdditionalP) {
+                                AddReqAlready = false;
+                            }
+                            else {
+                                AddReqAlready = true;
+                            }
+                        }
+                    }
+                    ReqPfromNeighbors[availibleSlot] = AdditionalP;
+                    try {
+                        if(OtherPeer < getPeerID())
+                            clients[OtherPeer - 1001].sendRequest(requestMessage(AdditionalP));
+                        else
+                            clients[OtherPeer - 1002].sendRequest(requestMessage(AdditionalP));
+
+
+                    }catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+
+
                 System.out.println("Piece");
+
                 break;
         }
     }
