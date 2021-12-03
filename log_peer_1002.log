@@ -22634,3 +22634,9 @@
 17:40:15.804393700: Peer 1001 received the 'not interested' message from 1002.
 17:45:39.281460100: Peer 1006 received the 'not interested' message from 1002.
 17:51:27.440273200: Peer 1001 received the 'not interested' message from 1002.
+17:57:42.486883400: Peer 1001 received the 'interested' message from 1002.
+17:57:42.491880500: Peer 1006 received the 'interested' message from 1002.
+17:59:04.320497900: Peer 1001 received the 'interested' message from 1002.
+17:59:04.345498400: Peer 1006 received the 'interested' message from 1002.
+18:00:07.913997300: Peer 1001 received the 'interested' message from 1002.
+18:00:07.925995500: Peer 1006 received the 'interested' message from 1002.

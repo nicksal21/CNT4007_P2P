@@ -75,7 +75,7 @@ public class Client extends Thread{
         InputStreamReader hanin = new InputStreamReader(in);
         BufferedReader handshake = new BufferedReader(hanin);
         resp = handshake.readLine();
-        if(!Objects.equals(resp, "P2PFILESHARINGPROJ0000000000"+Pier.getPeerID()))
+        if(Objects.equals(resp, "P2PFILESHARINGPROJ0000000000"+Pier.getPeerID()))
             System.out.println(resp);
         ServerId = Integer.parseInt(resp.substring(28,32));
         return resp;
