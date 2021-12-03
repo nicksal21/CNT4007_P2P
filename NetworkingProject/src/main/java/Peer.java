@@ -333,6 +333,29 @@ public class Peer {
             case 4:
                 // HAVE
                 // TODO: IMPLEMENT HAVE
+                byte[] OPhave = new byte[4];
+                for (int i = 5; i < message.length; i++)
+                    OPhave[i-5] = message[i];
+                int OPH= ByteBuffer.wrap(OPhave).getInt();
+                hasPieces[OtherPeer][OPH] = true;
+
+                try {
+                    if (!hasPieces[peerID][OPH]) {
+                        if(OtherPeer < getPeerID())
+                            clients[OtherPeer - 1001].sendRequest(InterestedMsg());
+                        else
+                            clients[OtherPeer - 1002].sendRequest(InterestedMsg());
+                    }
+                    else {
+                        if(OtherPeer < getPeerID())
+                            clients[OtherPeer - 1001].sendRequest(UnInterestedMsg());
+                        else
+                            clients[OtherPeer - 1002].sendRequest(UnInterestedMsg());
+                    }
+                }catch (IOException e) {
+                    e.printStackTrace();
+                }
+
                 System.out.println("Have");
                 writeLogMessage(OtherPeer, null, 0, 0, 6);
                 break;
