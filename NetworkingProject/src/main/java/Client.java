@@ -11,7 +11,7 @@ import java.net.*;
  * This function manually uses the specified socket
  * to send test messages to the Server Socket that is specified.
  */
-public class Client extends Thread{
+public class Client extends Thread {
 
     //Class Variable
     private Socket clientSocket;
@@ -24,7 +24,7 @@ public class Client extends Thread{
     private int ServerId;
     LinkedHashMap<String, String> cInfo;
 
-    Client(Peer p){
+    Client(Peer p) {
 
         Pier = p;
 
@@ -41,7 +41,7 @@ public class Client extends Thread{
 
     // Begins file connection
     public void startClient(int key, String ip, int port,
-                            LinkedHashMap<String, String > commonInfo) throws IOException {
+                            LinkedHashMap<String, String> commonInfo) throws IOException {
         cInfo = commonInfo;
         Fout = clientSocket.getOutputStream();
         /*if(Pier.getHasFile()){
@@ -75,9 +75,9 @@ public class Client extends Thread{
         InputStreamReader hanin = new InputStreamReader(in);
         BufferedReader handshake = new BufferedReader(hanin);
         resp = handshake.readLine();
-        if(Objects.equals(resp, "P2PFILESHARINGPROJ0000000000"+Pier.getPeerID()))
+        if (Objects.equals(resp, "P2PFILESHARINGPROJ0000000000" + Pier.getPeerID()))
             System.out.println(resp);
-        ServerId = Integer.parseInt(resp.substring(28,32));
+        ServerId = Integer.parseInt(resp.substring(28, 32));
         return resp;
     }
 
@@ -89,7 +89,7 @@ public class Client extends Thread{
         OutputStream out = clientSocket.getOutputStream();
         DataOutputStream sndReq = new DataOutputStream(out);
         sndReq.writeInt(req.length);
-        sndReq.write(req,0,req.length);
+        sndReq.write(req, 0, req.length);
 
     }
 

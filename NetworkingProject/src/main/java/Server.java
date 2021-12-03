@@ -126,6 +126,7 @@ public class Server extends Thread { // https://www.baeldung.com/a-guide-to-java
                 e.printStackTrace();
             }
         }
+
         @Override
         public void run() {
 
@@ -138,15 +139,15 @@ public class Server extends Thread { // https://www.baeldung.com/a-guide-to-java
                 String handshakeMsg = "";
                 boolean hand = false;
 
-                while(!hand) {
+                while (!hand) {
                     //boolean checkCond = !Objects.equals(handshakeMsg, "P2PFILESHARINGPROJ0000000000"+key);
                     handshakeMsg = MsgRead.readLine();
-                    if(!handshakeMsg.isEmpty())
-                        hand = Objects.equals(handshakeMsg.substring(0,28), "P2PFILESHARINGPROJ0000000000");
+                    if (!handshakeMsg.isEmpty())
+                        hand = Objects.equals(handshakeMsg.substring(0, 28), "P2PFILESHARINGPROJ0000000000");
                 }
 
-                Clientkey = Integer.parseInt(handshakeMsg.substring(28,32));
-                handshakeMsg = handshakeMsg.substring(0,28)+ServerKey;
+                Clientkey = Integer.parseInt(handshakeMsg.substring(28, 32));
+                handshakeMsg = handshakeMsg.substring(0, 28) + ServerKey;
                 PrintWriter pr = new PrintWriter(outMsg);
                 pr.println(handshakeMsg);
                 pr.flush();
@@ -155,9 +156,9 @@ public class Server extends Thread { // https://www.baeldung.com/a-guide-to-java
                 byte[] MsgReq = new byte[cReqLength];
                 sentReq.readFully(MsgReq);
 
-                while(true){
+                while (true) {
 
-                    ServerPeer.interpretMessage(Clientkey,MsgReq);
+                    ServerPeer.interpretMessage(Clientkey, MsgReq);
                     cReqLength = sentReq.readInt();
                     MsgReq = new byte[cReqLength];
                     sentReq.readFully(MsgReq);

@@ -134,19 +134,21 @@ class Project extends Thread {
         int key;
         int port;
         Peer sPeer;
-        PeerServer(Server peer, int k, int p, Peer serverP){
+
+        PeerServer(Server peer, int k, int p, Peer serverP) {
             key = k;
             port = p;
             Peer = peer;
             sPeer = serverP;
         }
+
         @Override
-        public void run(){
+        public void run() {
 
             System.out.println("Server " + key + " " + port + " is running");
 
             try {
-                Peer.startServer(key, port+key, PeerInfo, CommonInfo, sPeer);
+                Peer.startServer(key, port + key, PeerInfo, CommonInfo, sPeer);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -161,18 +163,19 @@ class Project extends Thread {
         int key;
         Peer ClientPeer;
 
-        PeerClientBehavior(Client[] peer, int k, Peer ClientP){
+        PeerClientBehavior(Client[] peer, int k, Peer ClientP) {
             key = k;
             cPeer = peer;
             ClientPeer = ClientP;
         }
+
         @Override
-        public void run(){
+        public void run() {
 
             System.out.println("Client " + key + " is running");
             byte[] message;
             message = ClientPeer.getBitFieldMessage();
-            if(ClientPeer.getHasFile()) {
+            if (ClientPeer.getHasFile()) {
 
                 for (int i = 0; i < cPeer.length; i++) {
                     try {
@@ -186,7 +189,7 @@ class Project extends Thread {
 
             //while (true){
 
-           // }
+            // }
 
         }
 
@@ -258,7 +261,7 @@ class Project extends Thread {
 
         Server[] servers = new Server[keySet.length];
         Thread[] threads = new Thread[keySet.length];
-        Client[][] clients = new Client[keySet.length][keySet.length-1];
+        Client[][] clients = new Client[keySet.length][keySet.length - 1];
 
         /*
          * This for loop is responsible for creating peer objects which
@@ -278,7 +281,7 @@ class Project extends Thread {
             //ServerSocket serverSocket =
             servers[k] = new Server();
             //Making threads for servers
-            threads[k] = new Thread(new PeerServer(servers[k],key,port,peersOnline.get(k)));
+            threads[k] = new Thread(new PeerServer(servers[k], key, port, peersOnline.get(k)));
             threads[k].start();
         }
 
@@ -311,7 +314,6 @@ class Project extends Thread {
             peersOnline.get(i).setServerSockets(servers[i]);
 
         }
-
 
 
         //byte[] test = new byte[]{0,0,0,1,0};

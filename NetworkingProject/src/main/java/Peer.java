@@ -115,7 +115,7 @@ public class Peer {
             //filePieces = fc.fileToByte("src/main/java/project_config_file_small/project_config_file_small/"+key+"/thefile", commonInfo);
             filePieces = fc.fileToByte(new File("NetworkingProject\\src\\main\\java\\project_config_file_small\\project_config_file_small\\" + key + "\\thefile").getCanonicalPath(), commonInfo);
             for (int i = 0; i < (int) Math.ceil((double) fileSize / PieceSize); i++) {
-                hasPieces[getPeerID()-1001][i] = true;
+                hasPieces[getPeerID() - 1001][i] = true;
             }
 
         } else
@@ -123,7 +123,7 @@ public class Peer {
     }
 
     //This function is responcible for setting the individual pieces when recieved
-    public synchronized void OtherPHas(int peer, int piece){
+    public synchronized void OtherPHas(int peer, int piece) {
         hasPieces[peer][piece] = true;
     }
 
@@ -166,65 +166,65 @@ public class Peer {
     }
 
     //Formats the Choke
-    public synchronized byte[] ChokeMsg(){
-        return new byte[] {0,0,0,1,0};
+    public synchronized byte[] ChokeMsg() {
+        return new byte[]{0, 0, 0, 1, 0};
     }
 
     //Formats the UnChoke
-    public synchronized byte[] UnChokeMsg(){
-        return new byte[] {0,0,0,1,1};
+    public synchronized byte[] UnChokeMsg() {
+        return new byte[]{0, 0, 0, 1, 1};
     }
 
     //Formats the Interested
-    public synchronized byte[] InterestedMsg(){
-        return new byte[] {0,0,0,1,2};
+    public synchronized byte[] InterestedMsg() {
+        return new byte[]{0, 0, 0, 1, 2};
     }
 
     //Formats the UnInterested
-    public synchronized byte[] UnInterestedMsg(){
-        return new byte[] {0,0,0,1,3};
+    public synchronized byte[] UnInterestedMsg() {
+        return new byte[]{0, 0, 0, 1, 3};
     }
 
     //Formats the Have Message
-    public synchronized byte[] haveMsg(int hasIndex){
+    public synchronized byte[] haveMsg(int hasIndex) {
 
-        byte[] mL= ByteBuffer.allocate(4).putInt(5).array();
+        byte[] mL = ByteBuffer.allocate(4).putInt(5).array();
         byte mT = (byte) 4;
         byte[] payload = ByteBuffer.allocate(4).putInt(hasIndex).array();
         byte[] hasM = new byte[9];
-        for (int i = 0; i<9; i++){
-            if(i < 4)
+        for (int i = 0; i < 9; i++) {
+            if (i < 4)
                 hasM[i] = mL[i];
-            else if (i==4)
+            else if (i == 4)
                 hasM[i] = mT;
             else
-                hasM[i] = payload[i-5];
+                hasM[i] = payload[i - 5];
         }
         return hasM;
 
 
     }
 
-    //Calculates the bitfield and formats the message
+    // Calculates the bitfield and formats the message
+    // 4 Bytes Length + 1 Byte Type + Variable Bytes for payload
     public synchronized byte[] getBitFieldMessage() {
         int b = (int) Math.ceil(Math.log((double) fileSize / PieceSize) / Math.log(2));
-        BitSet bitSet = new BitSet((int) Math.pow(2,b));
-        for (int i = 0; i < hasPieces[peerID-1001].length; i++) {
-            if (hasPieces[peerID-1001][i]) {
+        BitSet bitSet = new BitSet((int) Math.pow(2, b));
+        for (int i = 0; i < hasPieces[peerID - 1001].length; i++) {
+            if (hasPieces[peerID - 1001][i]) {
                 //bitfield[(int) Math.floor((double) i / 8)] |= 1 << (7 - i % 8);
                 bitSet.set((int) Math.pow(2, b) - i, true);
-            }
-            else
-                bitSet.set((int) Math.pow(2, b) - i,false);
+            } else
+                bitSet.set((int) Math.pow(2, b) - i, false);
         }
 
         byte[] bitf = bitSet.toByteArray();
         byte[] bitfield = new byte[bitf.length];
-        for(int i = 0; i < bitf.length; i++)
-            bitfield[i] = bitf[bitfield.length-1-i];
+        for (int i = 0; i < bitf.length; i++)
+            bitfield[i] = bitf[bitfield.length - 1 - i];
 
-        if(bitfield.length == 0){
-            bitfield = new byte[(int)Math.pow(2,b)/8+1];
+        if (bitfield.length == 0) {
+            bitfield = new byte[(int) Math.pow(2, b) / 8 + 1];
         }
 
         byte msgT = (byte) 5;
@@ -247,38 +247,38 @@ public class Peer {
     }
 
     //Creates the request message to be sent
-    public synchronized byte[] requestMessage(int pieceReq){
-        byte[] mL= ByteBuffer.allocate(4).putInt(5).array();
+    public synchronized byte[] requestMessage(int pieceReq) {
+        byte[] mL = ByteBuffer.allocate(4).putInt(5).array();
         byte mT = (byte) 6;
         byte[] payload = ByteBuffer.allocate(4).putInt(pieceReq).array();
         byte[] reqM = new byte[9];
-        for (int i = 0; i<9; i++){
-            if(i < 4)
+        for (int i = 0; i < 9; i++) {
+            if (i < 4)
                 reqM[i] = mL[i];
-            else if (i==4)
+            else if (i == 4)
                 reqM[i] = mT;
             else
-                reqM[i] = payload[i-5];
+                reqM[i] = payload[i - 5];
         }
         return reqM;
     }
 
     //Similar to request Message, but incorporates the entire piece into the bitfield
-    public synchronized byte[] pieceMessage(int pieceReq){
+    public synchronized byte[] pieceMessage(int pieceReq) {
         byte mT = (byte) 7;
         byte[] pieceData = filePieces[pieceReq];
         byte[] Indexload = ByteBuffer.allocate(4).putInt(pieceReq).array();
-        byte[] mL= ByteBuffer.allocate(4).putInt(5+pieceData.length).array();
-        byte[] reqM = new byte[9+pieceData.length];
-        for (int i = 0; i<reqM.length; i++){
-            if(i < 4)
+        byte[] mL = ByteBuffer.allocate(4).putInt(5 + pieceData.length).array();
+        byte[] reqM = new byte[9 + pieceData.length];
+        for (int i = 0; i < reqM.length; i++) {
+            if (i < 4)
                 reqM[i] = mL[i];
-            else if (i==4)
+            else if (i == 4)
                 reqM[i] = mT;
-            else if(i<9)
-                reqM[i] = Indexload[i-5];
+            else if (i < 9)
+                reqM[i] = Indexload[i - 5];
             else
-                reqM[i] = pieceData[i-9];
+                reqM[i] = pieceData[i - 9];
         }
         return reqM;
     }
@@ -333,11 +333,11 @@ public class Peer {
                 //send Req for Piece as soon as its unchoked
 
                 boolean dNHentire = false;
-                for(int i = 0; i < hasPieces[peerID].length; i++)
-                    if(!hasPieces[peerID - 1001][i])
+                for (int i = 0; i < hasPieces[peerID].length; i++)
+                    if (!hasPieces[peerID - 1001][i])
                         dNHentire = true;
 
-                if(dNHentire) {
+                if (dNHentire) {
                     int randP = (int) (Math.random() * fileSize / PieceSize);
                     boolean ReqAlready = true;
                     while (hasPieces[OtherPeer][randP] || ReqAlready) {
@@ -384,24 +384,23 @@ public class Peer {
                 // TODO: IMPLEMENT HAVE
                 byte[] OPhave = new byte[4];
                 for (int i = 5; i < message.length; i++)
-                    OPhave[i-5] = message[i];
-                int OPH= ByteBuffer.wrap(OPhave).getInt();
+                    OPhave[i - 5] = message[i];
+                int OPH = ByteBuffer.wrap(OPhave).getInt();
                 hasPieces[OtherPeer][OPH] = true;
 
                 try {
                     if (!hasPieces[peerID][OPH]) {
-                        if(OtherPeer < getPeerID())
+                        if (OtherPeer < getPeerID())
                             clients[OtherPeer - 1001].sendRequest(InterestedMsg());
                         else
                             clients[OtherPeer - 1002].sendRequest(InterestedMsg());
-                    }
-                    else {
-                        if(OtherPeer < getPeerID())
+                    } else {
+                        if (OtherPeer < getPeerID())
                             clients[OtherPeer - 1001].sendRequest(UnInterestedMsg());
                         else
                             clients[OtherPeer - 1002].sendRequest(UnInterestedMsg());
                     }
-                }catch (IOException e) {
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
 
@@ -412,48 +411,46 @@ public class Peer {
                 // BITFIELD
                 //As soon as a BitFieldRequest is sent
                 byte[] bFieldResp = getBitFieldMessage();
-                if(hasFile) {
+                if (hasFile) {
                     //try {
-                        if (OtherPeer < getPeerID()) {
-                           // clients[OtherPeer - 1001].sendRequest(bFieldResp);
-                        }
-                        else {
-                          //  clients[OtherPeer - 1002].sendRequest(bFieldResp);
-                        }
+                    if (OtherPeer < getPeerID()) {
+                        // clients[OtherPeer - 1001].sendRequest(bFieldResp);
+                    } else {
+                        //  clients[OtherPeer - 1002].sendRequest(bFieldResp);
+                    }
 
                     //}
                 }
                 boolean intestedINPeer = false;
                 //BitSet RecievedM = BitSet.valueOf(message);
                 //BitSet BitFiled = BitSet.valueOf(bFieldResp)
-                for (int i = 0; i < message.length*8; i++) {
-                        if (isSet(bFieldResp, i) != isSet(message, i))
-                            intestedINPeer = true;
+                for (int i = 0; i < message.length * 8; i++) {
+                    if (isSet(bFieldResp, i) != isSet(message, i))
+                        intestedINPeer = true;
 
                 }
-                for (int i = 40; i < 40+hasPieces[OtherPeer-1001].length; i++){
-                    if(isSet(message, i)){
-                        hasPieces[OtherPeer-1001][i-40]= true;
+                for (int i = 40; i < 40 + hasPieces[OtherPeer - 1001].length; i++) {
+                    if (isSet(message, i)) {
+                        hasPieces[OtherPeer - 1001][i - 40] = true;
                     }
                 }
-                isInterested[OtherPeer-1001] = intestedINPeer;
+                isInterested[OtherPeer - 1001] = intestedINPeer;
 
-                    try {
-                        if (intestedINPeer) {
-                            if(OtherPeer < getPeerID())
-                                clients[OtherPeer - 1001].sendRequest(InterestedMsg());
-                            else
-                                clients[OtherPeer - 1002].sendRequest(InterestedMsg());
-                        }
-                        else {
-                            if(OtherPeer < getPeerID())
-                                clients[OtherPeer - 1001].sendRequest(UnInterestedMsg());
-                            else
-                                clients[OtherPeer - 1002].sendRequest(UnInterestedMsg());
-                        }
-                    }catch (IOException e) {
-                        e.printStackTrace();
+                try {
+                    if (intestedINPeer) {
+                        if (OtherPeer < getPeerID())
+                            clients[OtherPeer - 1001].sendRequest(InterestedMsg());
+                        else
+                            clients[OtherPeer - 1002].sendRequest(InterestedMsg());
+                    } else {
+                        if (OtherPeer < getPeerID())
+                            clients[OtherPeer - 1001].sendRequest(UnInterestedMsg());
+                        else
+                            clients[OtherPeer - 1002].sendRequest(UnInterestedMsg());
                     }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
 
                 System.out.println("Bitfield");
@@ -463,20 +460,20 @@ public class Peer {
                 // TODO: IMPLEMENT REQUEST
                 // After initial BITFIELD you need to request the pieces that are needed
                 System.out.println("Request");
-                if(!isChoked[OtherPeer]){
+                if (!isChoked[OtherPeer]) {
                     byte[] OPReq = new byte[4];
                     for (int i = 5; i < message.length; i++)
-                        OPReq[i-5] = message[i];
+                        OPReq[i - 5] = message[i];
 
                     int OPReqed = ByteBuffer.wrap(OPReq).getInt();
 
                     try {
-                        if(OtherPeer < getPeerID())
+                        if (OtherPeer < getPeerID())
                             clients[OtherPeer - 1001].sendRequest(pieceMessage(OPReqed));
                         else
                             clients[OtherPeer - 1002].sendRequest(pieceMessage(OPReqed));
 
-                    }catch (IOException e) {
+                    } catch (IOException e) {
                         e.printStackTrace();
                     }
 
@@ -488,17 +485,17 @@ public class Peer {
                 // TODO: IMPLEMENT PIECE
                 byte[] pieceIndex = new byte[4];
                 byte[] pieceRecieved = new byte[PieceSize];
-                for (int i = 5; i < message.length; i++){
-                    if(i < 9)
-                        pieceIndex[i-5] = message[i];
+                for (int i = 5; i < message.length; i++) {
+                    if (i < 9)
+                        pieceIndex[i - 5] = message[i];
                     else
                         pieceRecieved[i - 9] = message[i];
                 }
                 int pIndex = ByteBuffer.wrap(pieceIndex).getInt();
                 filePieces[pIndex] = pieceRecieved;
                 int availibleSlot = -1;
-                for(int i = 0; i < ReqPfromNeighbors.length; i++)
-                    if(ReqPfromNeighbors[i] == pIndex) {
+                for (int i = 0; i < ReqPfromNeighbors.length; i++)
+                    if (ReqPfromNeighbors[i] == pIndex) {
                         ReqPfromNeighbors[i] = -1;
                         availibleSlot = i;
                     }
@@ -507,18 +504,18 @@ public class Peer {
                 try {
                     for (int i = 0; i < clients.length; i++)
                         clients[i].sendRequest(haveMsg(pIndex));
-                }catch (IOException e){
+                } catch (IOException e) {
                     System.err.println("IOEX in Piece recieved");
                 }
 
-                if(!isChoked[OtherPeer]){
+                if (!isChoked[OtherPeer]) {
 
                     boolean dNHFile = false;
-                    for(int i = 0; i < hasPieces[peerID].length; i++)
-                        if(!hasPieces[peerID - 1001][i])
+                    for (int i = 0; i < hasPieces[peerID].length; i++)
+                        if (!hasPieces[peerID - 1001][i])
                             dNHFile = true;
 
-                    if(dNHFile) {
+                    if (dNHFile) {
                         int randP = (int) (Math.random() * fileSize / PieceSize);
                         boolean ReqAlready = true;
                         while (hasPieces[OtherPeer][randP] || ReqAlready) {
@@ -549,7 +546,6 @@ public class Peer {
                         }
                     }
                 }
-
 
 
                 System.out.println("Piece");
