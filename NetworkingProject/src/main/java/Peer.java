@@ -8,9 +8,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.time.LocalTime;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.LinkedHashMap;
+import java.util.*;
+
+import java.util.Random;
 
 /*
  * Peer Object
@@ -32,6 +32,7 @@ public class Peer {
     private boolean[] isInterested;
     private boolean[][] hasPieces;
     private byte[][] filePieces;
+    private int[] ReqPfromNeighbors;
     private boolean wantToClose;
     private Server server;
     private Client[] clients;
@@ -40,7 +41,13 @@ public class Peer {
     private LinkedHashMap<Integer, String[]> AllPeers;
     int PieceSize;
     int fileSize;
+    Timer UnchkInterval;
+    TimerTask Chk = new TimerTask() {
+        @Override
+        public void run() {
 
+        }
+    };
 
     // This is the constructor of the class Peer
     public Peer(int key, LinkedHashMap<Integer, String[]> peerInfo, LinkedHashMap<String,
@@ -54,6 +61,7 @@ public class Peer {
         //Sets all arrays of isChoked and isInterested to false
         isChoked = new boolean[peerInfo.size()];
         isInterested = new boolean[peerInfo.size()];
+        UnchkInterval = new Timer();
 
         for (int i = 0; i < peerInfo.size(); i++) {
             isChoked[i] = false;
@@ -64,6 +72,8 @@ public class Peer {
         wantToClose = false;
         this.server = server;
         this.clients = clients;
+        ReqPfromNeighbors = new int[Integer.parseInt(commonInfo.get("NumberOfPreferredNeighbors"))];
+        Arrays.fill(ReqPfromNeighbors, -1);
 
 
         setFilePieces(commonInfo, hasFile, key);
@@ -319,6 +329,39 @@ public class Peer {
                 // UNCHOKE - Set isChoked to false
                 isChoked[OtherPeer - 1001] = false;
                 writeLogMessage(OtherPeer, null, 0, 0, 4);
+
+                //send Req for Piece as soon as its unchoked
+
+                int randP = (int) (Math.random() * fileSize/PieceSize);
+                boolean ReqAlready = true;
+                while (hasPieces[OtherPeer][randP] || ReqAlready) {
+
+                    randP = (int) (Math.random() * fileSize / PieceSize);
+                    for(int i = 0; i < ReqPfromNeighbors.length; i++) {
+                           if (ReqPfromNeighbors[i] != randP) {
+                            ReqAlready = false;
+                       }
+                       else {
+                           ReqAlready = true;
+                       }
+                   }
+                }
+                for (int i = 0; i < ReqPfromNeighbors.length;i++){
+                    if(ReqPfromNeighbors[i] == -1)
+                        ReqPfromNeighbors[i] = randP;
+                }
+
+                try {
+                    if(OtherPeer < getPeerID())
+                        clients[OtherPeer - 1001].sendRequest(requestMessage(randP));
+                    else
+                        clients[OtherPeer - 1002].sendRequest(requestMessage(randP));
+
+
+                }catch (IOException e) {
+                    e.printStackTrace();
+                }
+
                 break;
             case 2:
                 // INTERESTED - Set isInterested to true
