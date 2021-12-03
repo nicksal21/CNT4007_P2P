@@ -30,13 +30,14 @@ public class Peer {
     private boolean hasFile;
     private boolean[] isChoked;
     private boolean[] isInterested;
-    private boolean[] hasPieces;
+    private boolean[][] hasPieces;
     private byte[][] filePieces;
     private boolean wantToClose;
     private Server server;
     private Client[] clients;
     private FileConverter fc;
     private LinkedHashMap<Integer, Byte[]> peerBitfields;
+    private LinkedHashMap<Integer, String[]> AllPeers;
     int PieceSize;
     int fileSize;
 
@@ -49,7 +50,7 @@ public class Peer {
         listeningPort = Integer.parseInt(peerInfo.get(key)[1]);
         hasFile = Integer.parseInt(peerInfo.get(key)[2]) == 1;
         peerID = key;
-
+        AllPeers = peerInfo;
         //Sets all arrays of isChoked and isInterested to false
         isChoked = new boolean[peerInfo.size()];
         isInterested = new boolean[peerInfo.size()];
@@ -94,15 +95,17 @@ public class Peer {
 
         PieceSize = Integer.parseInt(commonInfo.get("PieceSize"));
         fileSize = Integer.parseInt(commonInfo.get("FileSize"));
-        hasPieces = new boolean[(int) Math.ceil((double) fileSize / PieceSize)];
+        hasPieces = new boolean[AllPeers.size()][(int) Math.ceil((double) fileSize / PieceSize)];
 
-        Arrays.fill(hasPieces, false);
+        for (int i = 0; i < AllPeers.size(); i++) {
+            Arrays.fill(hasPieces[i], false);
+        }
 
         if (hasFile) {
             //filePieces = fc.fileToByte("src/main/java/project_config_file_small/project_config_file_small/"+key+"/thefile", commonInfo);
             filePieces = fc.fileToByte(new File("NetworkingProject\\src\\main\\java\\project_config_file_small\\project_config_file_small\\" + key + "\\thefile").getCanonicalPath(), commonInfo);
             for (int i = 0; i < (int) Math.ceil((double) fileSize / PieceSize); i++) {
-                hasPieces[i] = true;
+                hasPieces[getPeerID()-1001][i] = true;
             }
 
         } else
@@ -110,9 +113,12 @@ public class Peer {
     }
 
     //This function is responcible for setting the individual pieces when recieved
+    public synchronized void OtherPHas(int peer, int piece){
+        hasPieces[peer][piece] = true;
+    }
+
     public synchronized void setPiece(int pieceNum, byte[] piece) throws IOException {
 
-        hasPieces[pieceNum] = true;
         filePieces[pieceNum] = piece;
 
     }
@@ -193,8 +199,8 @@ public class Peer {
     public synchronized byte[] getBitFieldMessage() {
         int b = (int) Math.ceil(Math.log((double) fileSize / PieceSize) / Math.log(2));
         BitSet bitSet = new BitSet((int) Math.pow(2,b));
-        for (int i = 0; i < hasPieces.length; i++) {
-            if (hasPieces[i]) {
+        for (int i = 0; i < hasPieces[peerID-1001].length; i++) {
+            if (hasPieces[peerID-1001][i]) {
                 //bitfield[(int) Math.floor((double) i / 8)] |= 1 << (7 - i % 8);
                 bitSet.set((int) Math.pow(2, b) - i, true);
             }
@@ -202,7 +208,10 @@ public class Peer {
                 bitSet.set((int) Math.pow(2, b) - i,false);
         }
 
-        byte[] bitfield = bitSet.toByteArray();
+        byte[] bitf = bitSet.toByteArray();
+        byte[] bitfield = new byte[bitf.length];
+        for(int i = 0; i < bitf.length; i++)
+            bitfield[i] = bitf[bitfield.length-1-i];
 
         if(bitfield.length == 0){
             bitfield = new byte[(int)Math.pow(2,b)/8+1];
@@ -345,10 +354,15 @@ public class Peer {
                 boolean intestedINPeer = false;
                 //BitSet RecievedM = BitSet.valueOf(message);
                 //BitSet BitFiled = BitSet.valueOf(bFieldResp)
-                for (int i = 0; i < message.length; i++) {
+                for (int i = 0; i < message.length*8; i++) {
                         if (isSet(bFieldResp, i) != isSet(message, i))
                             intestedINPeer = true;
 
+                }
+                for (int i = 40; i < 40+hasPieces[OtherPeer-1001].length; i++){
+                    if(isSet(message, i)){
+                        hasPieces[OtherPeer-1001][i-40]= true;
+                    }
                 }
                 isInterested[OtherPeer-1001] = intestedINPeer;
 
@@ -392,6 +406,7 @@ public class Peer {
         int bitPos = bit % 8;
         return (bitArr[i] >> bitPos & 1) == 1;
     }
+
 
     public synchronized byte[] generateMessage() {
         return null;

@@ -287,15 +287,15 @@ class Project extends Thread {
             for (int j = 0; j < keySet.length; j++) {
                 if (keySet[j] != 1001 + i) {
                     int portN = Integer.parseInt(PeerInfo.get(1001 + j)[1]);
-                    String hostname = PeerInfo.get(1001 + i)[0];
+                    String hostname = PeerInfo.get(1001 + j)[0];
                     //Client client = new Client(PeerInfo.get(1001+i)[0], Integer.parseInt(PeerInfo.get(1001+i)[1]));
                     Client client = new Client(peersOnline.get(j));
                     client.start();
-                    client.startConnection(hostname, portN + keySet[i]);
+                    client.startConnection(hostname, portN + keySet[j]);
 
                     //Handshake
                     String handshakeMessage = "P2PFILESHARINGPROJ0000000000";
-                    handshakeMessage += keySet[j];
+                    handshakeMessage += keySet[i];
                     client.handMessage(handshakeMessage);
                     clients[i][j - foundDup] = client;
                 } else
