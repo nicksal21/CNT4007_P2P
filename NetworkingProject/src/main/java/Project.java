@@ -183,6 +183,7 @@ class Project extends Thread {
                 }
             }
 
+
             //while (true){
 
            // }
@@ -293,7 +294,7 @@ class Project extends Thread {
                     client.start();
                     client.startConnection(hostname, portN + keySet[j]);
 
-                    //Handshake
+                    //Handshake need to make it byte[]
                     String handshakeMessage = "P2PFILESHARINGPROJ0000000000";
                     handshakeMessage += keySet[i];
                     client.handMessage(handshakeMessage);

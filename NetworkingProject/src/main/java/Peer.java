@@ -332,34 +332,40 @@ public class Peer {
 
                 //send Req for Piece as soon as its unchoked
 
-                int randP = (int) (Math.random() * fileSize/PieceSize);
-                boolean ReqAlready = true;
-                while (hasPieces[OtherPeer][randP] || ReqAlready) {
+                boolean dNHentire = false;
+                for(int i = 0; i < hasPieces[peerID].length; i++)
+                    if(!hasPieces[peerID - 1001][i])
+                        dNHentire = true;
 
-                    randP = (int) (Math.random() * fileSize / PieceSize);
-                    for(int i = 0; i < ReqPfromNeighbors.length; i++) {
-                           if (ReqPfromNeighbors[i] != randP) {
-                            ReqAlready = false;
-                       }
-                       else {
-                           ReqAlready = true;
-                       }
-                   }
-                }
-                for (int i = 0; i < ReqPfromNeighbors.length;i++){
-                    if(ReqPfromNeighbors[i] == -1)
-                        ReqPfromNeighbors[i] = randP;
-                }
+                if(dNHentire) {
+                    int randP = (int) (Math.random() * fileSize / PieceSize);
+                    boolean ReqAlready = true;
+                    while (hasPieces[OtherPeer][randP] || ReqAlready) {
 
-                try {
-                    if(OtherPeer < getPeerID())
-                        clients[OtherPeer - 1001].sendRequest(requestMessage(randP));
-                    else
-                        clients[OtherPeer - 1002].sendRequest(requestMessage(randP));
+                        randP = (int) (Math.random() * fileSize / PieceSize);
+                        for (int i = 0; i < ReqPfromNeighbors.length; i++) {
+                            if (ReqPfromNeighbors[i] != randP) {
+                                ReqAlready = false;
+                            } else {
+                                ReqAlready = true;
+                            }
+                        }
+                    }
+                    for (int i = 0; i < ReqPfromNeighbors.length; i++) {
+                        if (ReqPfromNeighbors[i] == -1)
+                            ReqPfromNeighbors[i] = randP;
+                    }
+
+                    try {
+                        if (OtherPeer < getPeerID())
+                            clients[OtherPeer - 1001].sendRequest(requestMessage(randP));
+                        else
+                            clients[OtherPeer - 1002].sendRequest(requestMessage(randP));
 
 
-                }catch (IOException e) {
-                    e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
 
                 break;
@@ -507,30 +513,40 @@ public class Peer {
 
                 if(!isChoked[OtherPeer]){
 
-                    int AdditionalP = (int) (Math.random() * fileSize/PieceSize);
-                    boolean AddReqAlready = true;
-                    while (hasPieces[OtherPeer][AdditionalP] || AddReqAlready) {
+                    boolean dNHFile = false;
+                    for(int i = 0; i < hasPieces[peerID].length; i++)
+                        if(!hasPieces[peerID - 1001][i])
+                            dNHFile = true;
 
-                        AdditionalP = (int) (Math.random() * fileSize / PieceSize);
-                        for(int i = 0; i < ReqPfromNeighbors.length; i++) {
-                            if (ReqPfromNeighbors[i] != AdditionalP) {
-                                AddReqAlready = false;
-                            }
-                            else {
-                                AddReqAlready = true;
+                    if(dNHFile) {
+                        int randP = (int) (Math.random() * fileSize / PieceSize);
+                        boolean ReqAlready = true;
+                        while (hasPieces[OtherPeer][randP] || ReqAlready) {
+
+                            randP = (int) (Math.random() * fileSize / PieceSize);
+                            for (int i = 0; i < ReqPfromNeighbors.length; i++) {
+                                if (ReqPfromNeighbors[i] != randP) {
+                                    ReqAlready = false;
+                                } else {
+                                    ReqAlready = true;
+                                }
                             }
                         }
-                    }
-                    ReqPfromNeighbors[availibleSlot] = AdditionalP;
-                    try {
-                        if(OtherPeer < getPeerID())
-                            clients[OtherPeer - 1001].sendRequest(requestMessage(AdditionalP));
-                        else
-                            clients[OtherPeer - 1002].sendRequest(requestMessage(AdditionalP));
+                        for (int i = 0; i < ReqPfromNeighbors.length; i++) {
+                            if (ReqPfromNeighbors[i] == -1)
+                                ReqPfromNeighbors[i] = randP;
+                        }
+
+                        try {
+                            if (OtherPeer < getPeerID())
+                                clients[OtherPeer - 1001].sendRequest(requestMessage(randP));
+                            else
+                                clients[OtherPeer - 1002].sendRequest(requestMessage(randP));
 
 
-                    }catch (IOException e) {
-                        e.printStackTrace();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
 
