@@ -187,11 +187,10 @@ class Project extends Thread {
             }
 
         do {
-
-            for( int i = 0; i < cPeer.length; i++){
+            for (int i = 0; i < cPeer.length; i++) {
                 try {
-                    cPeer[i].sendRequest(ClientPeer.UnChokeMsg());
-                }catch (IOException e){
+                    cPeer[i].sendRequest(ClientPeer.ChokeMsg());
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
@@ -217,7 +216,6 @@ class Project extends Thread {
 
 
             boolean[][] track = ClientPeer.getHasPieces();
-
 
 
         }

@@ -10,8 +10,6 @@ import java.nio.ByteBuffer;
 import java.time.LocalTime;
 import java.util.*;
 
-import java.util.Random;
-
 /*
  * Peer Object
  * Contains all the relevant information that is needed to
@@ -131,7 +129,7 @@ public class Peer {
         }
     }
 
-    //This function is responcible for setting the individual pieces when recieved
+    //This function is responsible for setting the individual pieces when received
     public synchronized void OtherPHas(int peer, int piece) {
         hasPieces[peer][piece] = true;
     }
@@ -226,7 +224,7 @@ public class Peer {
     // 4 Bytes Length + 1 Byte Type + Variable Bytes for payload
     public synchronized byte[] getBitFieldMessage() {
         int b = (int) Math.ceil(Math.log((double) fileSize / PieceSize) / Math.log(2));
-        //BitSet bitSet = new BitSet((int) Math.pow(2, b));
+        // BitSet bitSet = new BitSet((int) Math.pow(2, b));
         BitSet bitSet = new BitSet((int) Math.ceil((double) fileSize / PieceSize));
 
         for (int i = 0; i < hasPieces[peerID - 1001].length; i++) {
@@ -242,7 +240,7 @@ public class Peer {
 
 
         if (bitfield.length == 0) {
-            bitfield = new byte[(int)Math.ceil((double) (fileSize/PieceSize)/8)];
+            bitfield = new byte[(int) Math.ceil((double) (fileSize / PieceSize) / 8)];
         }
 
         byte msgT = (byte) 5;
@@ -368,10 +366,10 @@ public class Peer {
                 for (int i = 5; i < message.length; i++)
                     OPhave[i - 5] = message[i];
                 int OPH = ByteBuffer.wrap(OPhave).getInt();
-                hasPieces[OtherPeer][OPH] = true;
+                hasPieces[OtherPeer - 1001][OPH] = true;
 
                 try {
-                    if (!hasPieces[peerID-1001][OPH]) {
+                    if (!hasPieces[peerID - 1001][OPH]) {
                         if (OtherPeer < getPeerID())
                             clients[OtherPeer - 1001].sendRequest(InterestedMsg());
                         else
@@ -396,22 +394,13 @@ public class Peer {
                 // BITFIELD
                 //As soon as a BitFieldRequest is sent
                 byte[] bFieldResp = getBitFieldMessage();
-                if (hasFile) {
-                    //try {
-                    if (OtherPeer < getPeerID()) {
-                        // clients[OtherPeer - 1001].sendRequest(bFieldResp);
-                    } else {
-                        //  clients[OtherPeer - 1002].sendRequest(bFieldResp);
-                    }
 
-                    //}
-                }
-                boolean intestedINPeer = false;
+                boolean interestedINPeer = false;
                 //BitSet RecievedM = BitSet.valueOf(message);
                 //BitSet BitFiled = BitSet.valueOf(bFieldResp)
-                for (int i = 0; i <= (message.length-1) * 8; i++) {
+                for (int i = 0; i <= (message.length - 1) * 8; i++) {
                     if (isSet(bFieldResp, i) != isSet(message, i))
-                        intestedINPeer = true;
+                        interestedINPeer = true;
 
                 }
 
@@ -421,10 +410,10 @@ public class Peer {
                         hasPieces[OtherPeer - 1001][i - 40] = true;
                     }
                 }
-                isInterested[OtherPeer - 1001] = intestedINPeer;
+                isInterested[OtherPeer - 1001] = interestedINPeer;
 
                 try {
-                    if (intestedINPeer) {
+                    if (interestedINPeer) {
                         if (OtherPeer < getPeerID())
                             clients[OtherPeer - 1001].sendRequest(InterestedMsg());
                         else
@@ -447,7 +436,7 @@ public class Peer {
                 // TODO: IMPLEMENT REQUEST
                 // After initial BITFIELD you need to request the pieces that are needed
                 //System.out.println("Request");
-                if (!isChoked[OtherPeer-1001]) {
+                if (!isChoked[OtherPeer - 1001]) {
                     byte[] OPReq = new byte[4];
                     for (int i = 5; i < message.length; i++)
                         OPReq[i - 5] = message[i];
@@ -480,14 +469,14 @@ public class Peer {
                 }
                 int pIndex = ByteBuffer.wrap(pieceIndex).getInt();
                 filePieces[pIndex] = pieceRecieved;
-                hasPieces[peerID-1001][pIndex] = true;
+                hasPieces[peerID - 1001][pIndex] = true;
 
 
-                int availibleSlot = -1;
+                int availableSlot = -1;
                 for (int i = 0; i < ReqPfromNeighbors.length; i++)
                     if (ReqPfromNeighbors[i] == pIndex) {
                         ReqPfromNeighbors[i] = -1;
-                        availibleSlot = i;
+                        availableSlot = i;
                     }
 
                 for (int i = 0; i < IndexOfPiecesMissing.size(); i++)
@@ -509,7 +498,7 @@ public class Peer {
                     hasFile = check;
                 }
 
-                //Once recieve a piece send HAVE to all other Peers
+                // Once 'receive' a piece send HAVE to all the other Peers
                 try {
                     for (int i = 0; i < clients.length; i++)
                         clients[i].sendRequest(haveMsg(pIndex));
@@ -597,7 +586,7 @@ public class Peer {
         return (bitArr[i] >> bitPos & 1) == 1;
     }
 
-
+    // Generate message
     public synchronized byte[] generateMessage() {
         return null;
     }
