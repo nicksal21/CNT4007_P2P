@@ -194,6 +194,8 @@ class Project extends Thread {
                 }
             }
 
+
+
             boolean[][] track = ClientPeer.getHasPieces();
 
 
@@ -347,15 +349,21 @@ class Project extends Thread {
             cThreads[k] = new Thread(new PeerClientBehavior(clients[k], key, peersOnline.get(k)));
             cThreads[k].start();
         }
-        boolean AllFinished = false;
-        boolean[][] peerProg;
-        while(!AllFinished){
-            AllFinished = true;
+
+        //This checks if all the peers have the file, if so they will end the program
+        boolean AllFinished;
+        int totalNumDone,numDone = 0;
+        boolean[][] peerProg = peersOnline.get(0).getHasPieces();
+
+        do {
             peerProg = peersOnline.get(0).getHasPieces();
-            for (int i = 0; i < peerProg.length; i++){
-                for (int j = 0; j < peerProg[i].length; j++){
-                    if(!peerProg[i][j]){
-                        AllFinished =false;
+            AllFinished = true;
+            numDone = 0;
+
+            for (int i = 0; i < peerProg.length; i++) {
+                for (int j = 0; j < peerProg[i].length; j++) {
+                    if (!peerProg[i][j]) {
+                        AllFinished = false;
                     }
                 }
 
