@@ -391,6 +391,10 @@ class Project extends Thread {
 
         }
         System.out.println("All Peers have File");
+        for (int i = 0; i < threads.length; i++)
+                threads[i].stop();
+        for (int i = 0; i < cThreads.length; i++)
+            cThreads[i].stop();
 
         /*
          * To-do list

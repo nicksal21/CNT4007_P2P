@@ -40,8 +40,13 @@ public class Peer {
     private LinkedHashMap<Integer, Byte[]> peerBitfields;
     private LinkedHashMap<Integer, String[]> AllPeers;
     private ArrayList<Integer> IndexOfPiecesMissing;
-    int PieceSize;
-    int fileSize;
+    private int PieceSize;
+    private int fileSize;
+    int unchokeInterval;
+    int OptimisticUnchokeInterval;
+
+    int[] PerferedNeighbors;
+    int[] filesTranseredToPN;
 
 
     // This is the constructor of the class Peer
@@ -665,6 +670,11 @@ public class Peer {
             e.printStackTrace();
         }
     }
+
+   // public synchronized int[] PerferredNeighborCalc(){
+    //
+
+   // }
 
     // Print the Peer details
     public synchronized void printPeerInfo() {
