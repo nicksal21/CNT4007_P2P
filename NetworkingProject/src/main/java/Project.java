@@ -347,8 +347,22 @@ class Project extends Thread {
             cThreads[k] = new Thread(new PeerClientBehavior(clients[k], key, peersOnline.get(k)));
             cThreads[k].start();
         }
+        boolean AllFinished = false;
+        boolean[][] peerProg;
+        while(!AllFinished){
+            AllFinished = true;
+            peerProg = peersOnline.get(0).getHasPieces();
+            for (int i = 0; i < peerProg.length; i++){
+                for (int j = 0; j < peerProg[i].length; j++){
+                    if(!peerProg[i][j]){
+                        AllFinished =false;
+                    }
+                }
 
+            }
 
+        }
+        System.out.println("All Peers have File");
 
         /*
          * To-do list
