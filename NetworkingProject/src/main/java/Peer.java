@@ -43,13 +43,7 @@ public class Peer {
     int PieceSize;
     int fileSize;
 
-    /*Timer UnchkInterval;
-    TimerTask Chk = new TimerTask() {
-        @Override
-        public void run() {
 
-        }
-    };*/
     // This is the constructor of the class Peer
     public Peer(int key, LinkedHashMap<Integer, String[]> peerInfo, LinkedHashMap<String,
             String> commonInfo, Server server, Client[] clients) throws IOException {
@@ -78,6 +72,8 @@ public class Peer {
         ReqPfromNeighbors = new int[isChoked.length];
         Arrays.fill(ReqPfromNeighbors, -1);
 
+        OptimisticUnchokeInterval = Integer.parseInt(commonInfo.get("OptimisticUnchokingInterval"));
+        unchokeInterval = Integer.parseInt(commonInfo.get("UnchokingInterval"));
 
         setFilePieces(commonInfo, hasFile, key);
     }
@@ -162,6 +158,10 @@ public class Peer {
     public synchronized boolean getWantToClose() {
         return wantToClose;
     }
+
+    public synchronized int getOptimisticUnchokeInterval(){return OptimisticUnchokeInterval;}
+
+    public synchronized int getUnchokeInterval(){return unchokeInterval;}
 
     // Returns if the peer has the complete file or not
     public synchronized boolean getHasFile() {
@@ -484,6 +484,7 @@ public class Peer {
                     if (IndexOfPiecesMissing.get(i) == pIndex) {
                         IndexOfPiecesMissing.remove(i);
                     }
+                writeLogMessage(OtherPeer, null, pIndex, hasPieces[peerID-1001].length - IndexOfPiecesMissing.size(), 9);
 
                 if (!hasFile) {
                     boolean check = true;
@@ -517,7 +518,6 @@ public class Peer {
 
     // Check for whether a peer has a desired file piece.
     private synchronized void FindPieceToRequest(int OtherPeer) {
-        if (!isChoked[OtherPeer - 1001]) {
 
             //boolean dNHTFile = !hasFile;
             //for (int i = 0; i < hasPieces[peerID-1001].length; i++)
@@ -578,7 +578,7 @@ public class Peer {
                     e.printStackTrace();
                 }
             }
-        }
+
     }
 
 

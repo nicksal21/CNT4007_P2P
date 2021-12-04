@@ -186,6 +186,8 @@ class Project extends Thread {
                 }
             }
 
+        do {
+
             for( int i = 0; i < cPeer.length; i++){
                 try {
                     cPeer[i].sendRequest(ClientPeer.UnChokeMsg());
@@ -193,6 +195,24 @@ class Project extends Thread {
                     e.printStackTrace();
                 }
             }
+            Timer UnchokeInterval = new Timer();
+            TimerTask Chk = new TimerTask() {
+                @Override
+                public void run() {
+
+                    for (int i = 0; i < cPeer.length; i++) {
+                        try {
+                            cPeer[i].sendRequest(ClientPeer.UnChokeMsg());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                }
+            };
+            UnchokeInterval.schedule(Chk, ClientPeer.unchokeInterval * 1000);
+        }while (ClientPeer.getHasFile());
+
 
 
 
