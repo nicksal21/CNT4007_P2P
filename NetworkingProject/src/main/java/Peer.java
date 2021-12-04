@@ -209,7 +209,9 @@ public class Peer {
     // 4 Bytes Length + 1 Byte Type + Variable Bytes for payload
     public synchronized byte[] getBitFieldMessage() {
         int b = (int) Math.ceil(Math.log((double) fileSize / PieceSize) / Math.log(2));
-        BitSet bitSet = new BitSet((int) Math.pow(2, b));
+        //BitSet bitSet = new BitSet((int) Math.pow(2, b));
+        BitSet bitSet = new BitSet((int) Math.ceil((double) fileSize / PieceSize));
+
         for (int i = 0; i < hasPieces[peerID - 1001].length; i++) {
             if (hasPieces[peerID - 1001][i]) {
                 //bitfield[(int) Math.floor((double) i / 8)] |= 1 << (7 - i % 8);
@@ -218,10 +220,9 @@ public class Peer {
                 bitSet.set((int) Math.pow(2, b) - i, false);
         }
 
-        byte[] bitf = bitSet.toByteArray();
-        byte[] bitfield = new byte[bitf.length];
-        for (int i = 0; i < bitf.length; i++)
-            bitfield[i] = bitf[bitfield.length - 1 - i];
+        //byte[] bitf = bitSet.toByteArray();
+        byte[] bitfield = bitSet.toByteArray();
+
 
         if (bitfield.length == 0) {
             bitfield = new byte[(int) Math.pow(2, b) / 8 + 1];
@@ -333,14 +334,14 @@ public class Peer {
                 //send Req for Piece as soon as its unchoked
 
                 boolean dNHentire = false;
-                for (int i = 0; i < hasPieces[peerID].length; i++)
+                for (int i = 0; i < hasPieces[peerID-1001].length; i++)
                     if (!hasPieces[peerID - 1001][i])
                         dNHentire = true;
 
                 if (dNHentire) {
                     int randP = (int) (Math.random() * fileSize / PieceSize);
                     boolean ReqAlready = true;
-                    while (hasPieces[OtherPeer][randP] || ReqAlready) {
+                    while (hasPieces[OtherPeer-1001][randP] || ReqAlready) {
 
                         randP = (int) (Math.random() * fileSize / PieceSize);
                         for (int i = 0; i < ReqPfromNeighbors.length; i++) {
@@ -389,7 +390,7 @@ public class Peer {
                 hasPieces[OtherPeer][OPH] = true;
 
                 try {
-                    if (!hasPieces[peerID][OPH]) {
+                    if (!hasPieces[peerID-1001][OPH]) {
                         if (OtherPeer < getPeerID())
                             clients[OtherPeer - 1001].sendRequest(InterestedMsg());
                         else
@@ -459,8 +460,8 @@ public class Peer {
                 // REQUEST
                 // TODO: IMPLEMENT REQUEST
                 // After initial BITFIELD you need to request the pieces that are needed
-                System.out.println("Request");
-                if (!isChoked[OtherPeer]) {
+                //System.out.println("Request");
+                if (!isChoked[OtherPeer-1001]) {
                     byte[] OPReq = new byte[4];
                     for (int i = 5; i < message.length; i++)
                         OPReq[i - 5] = message[i];
@@ -493,6 +494,9 @@ public class Peer {
                 }
                 int pIndex = ByteBuffer.wrap(pieceIndex).getInt();
                 filePieces[pIndex] = pieceRecieved;
+                hasPieces[peerID-1001][pIndex] = true;
+
+
                 int availibleSlot = -1;
                 for (int i = 0; i < ReqPfromNeighbors.length; i++)
                     if (ReqPfromNeighbors[i] == pIndex) {
@@ -554,7 +558,7 @@ public class Peer {
         }
     }
 
-    public boolean isSet(byte[] bitArr, int bit) {
+    public synchronized boolean isSet(byte[] bitArr, int bit) {
         int i = bit / 8;
         int bitPos = bit % 8;
         return (bitArr[i] >> bitPos & 1) == 1;

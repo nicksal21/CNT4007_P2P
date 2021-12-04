@@ -186,10 +186,17 @@ class Project extends Thread {
                 }
             }
 
+            for( int i = 0; i < cPeer.length; i++){
+                try {
+                    cPeer[i].sendRequest(ClientPeer.UnChokeMsg());
+                }catch (IOException e){
+                    e.printStackTrace();
+                }
+            }
 
-            //while (true){
+            boolean[][] track = ClientPeer.getHasPieces();
 
-            // }
+
 
         }
 
