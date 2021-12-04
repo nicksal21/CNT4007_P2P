@@ -385,11 +385,18 @@ class Project extends Thread {
                     if (!peerProg[i][j]) {
                         AllFinished = false;
                     }
+                    else
+                    {
+                        numDone ++;
+                    }
                 }
-
             }
+            totalNumDone = numDone;
 
-        }
+            System.out.println(totalNumDone);
+
+        } while (!AllFinished);
+
         System.out.println("All Peers have File");
         for (int i = 0; i < threads.length; i++)
                 threads[i].stop();

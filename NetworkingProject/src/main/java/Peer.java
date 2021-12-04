@@ -173,6 +173,10 @@ public class Peer {
         return hasFile;
     }
 
+    public synchronized boolean[][] getHasPieces() {
+        return hasPieces;
+    }
+
     // Get pieces of file
     public synchronized byte[][] getFilePieces() {
         return filePieces;
@@ -228,9 +232,9 @@ public class Peer {
         for (int i = 0; i < hasPieces[peerID - 1001].length; i++) {
             if (hasPieces[peerID - 1001][i]) {
                 //bitfield[(int) Math.floor((double) i / 8)] |= 1 << (7 - i % 8);
-                bitSet.set((int) Math.pow(2, b) - i, true);
+                bitSet.set(i, true);
             } else
-                bitSet.set((int) Math.pow(2, b) - i, false);
+                bitSet.set(i, false);
         }
 
         //byte[] bitf = bitSet.toByteArray();
@@ -381,9 +385,8 @@ public class Peer {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-
-                System.out.println("Have");
-                writeLogMessage(OtherPeer, null, 0, 0, 6);
+                //System.out.println("Have");
+                writeLogMessage(OtherPeer, null, OPH, 0, 6);
 
                 FindPieceToRequest(OtherPeer);
 
@@ -411,6 +414,8 @@ public class Peer {
                         intestedINPeer = true;
 
                 }
+
+                //The bitfield starts at byte 5 aka bit 40
                 for (int i = 40; i < 40 + hasPieces[OtherPeer - 1001].length; i++) {
                     if (isSet(message, i)) {
                         hasPieces[OtherPeer - 1001][i - 40] = true;
@@ -514,8 +519,6 @@ public class Peer {
 
                 FindPieceToRequest(OtherPeer);
 
-
-                System.out.println("Piece");
 
                 break;
         }
