@@ -528,11 +528,11 @@ public class Peer {
             boolean hasPieceNReq = false;
             if (!hasFile) { // This peer doesn't have the file
 
-                for (int i = 0; i < hasPieces[OtherPeer - 1001].length; i++) {//Looking through the OtherPeer for pieces we need
+                for (int i = 0; i < IndexOfPiecesMissing.size(); i++) {//Looking through the OtherPeer for pieces we need
 
                     for (int j = 0; j < ReqPfromNeighbors.length; j++) {// Looking through what has been requested
 
-                        if (hasPieces[OtherPeer - 1001][i] && ReqPfromNeighbors[j] != i) {// Has a piece we need and not requested yet
+                        if (hasPieces[OtherPeer - 1001][IndexOfPiecesMissing.get(i)] && ReqPfromNeighbors[j] != IndexOfPiecesMissing.get(i)) {// Has a piece we need and not requested yet
                             hasPieceNReq = true;
                         } else {
                             hasPieceNReq = false;
