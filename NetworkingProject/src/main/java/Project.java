@@ -433,8 +433,8 @@ class Project extends Thread {
         int numDone = 0;
         boolean[][] peerProg = peersOnline.get(0).getHasPieces();
 
-        UnchokeInterval.schedule(Chk, peersOnline.get(0).unchokeInterval * 1000);
-        OPUnchokeInterval.schedule(Op, peersOnline.get(0).OptimisticUnchokeInterval * 1000);
+        UnchokeInterval.scheduleAtFixedRate(Chk, peersOnline.get(0).unchokeInterval * 1000, peersOnline.get(0).unchokeInterval * 1000);
+        OPUnchokeInterval.scheduleAtFixedRate(Op, peersOnline.get(0).OptimisticUnchokeInterval * 1000, peersOnline.get(0).OptimisticUnchokeInterval * 1000);
 
         do {
             peerProg = peersOnline.get(0).getHasPieces();

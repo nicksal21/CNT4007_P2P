@@ -349,8 +349,10 @@ public class Peer {
         switch (messageType) {
             case 0:
                 // CHOKE - Set isChoked to true
-                isChoked[OtherPeer - 1001] = true;
-                writeLogMessage(OtherPeer, PreferredNeighbors, 0, 0, 5);
+                if(!isChoked[OtherPeer-1001]) {
+                    isChoked[OtherPeer - 1001] = true;
+                    writeLogMessage(OtherPeer, PreferredNeighbors, 0, 0, 5);
+                }
                 break;
             case 1:
                 // UNCHOKE - Set isChoked to false
@@ -364,8 +366,10 @@ public class Peer {
                     }
                 }
                 if(preFNeighbor || OtherPeer == OptPeer) {
-                    isChoked[OtherPeer - 1001] = false;
-                    writeLogMessage(OtherPeer, PreferredNeighbors, 0, 0, 4);
+                    if (isChoked[OtherPeer-1001]) {
+                        isChoked[OtherPeer - 1001] = false;
+                        writeLogMessage(OtherPeer, PreferredNeighbors, 0, 0, 4);
+                    }
                 }
 
 
@@ -373,13 +377,17 @@ public class Peer {
                 break;
             case 2:
                 // INTERESTED - Set isInterested to true
-                isInterested[OtherPeer - 1001] = true;
-                writeLogMessage(OtherPeer, PreferredNeighbors, 0, 0, 7);
+                if(!isInterested[OtherPeer-1001]) {
+                    isInterested[OtherPeer - 1001] = true;
+                    writeLogMessage(OtherPeer, PreferredNeighbors, 0, 0, 7);
+                }
                 break;
             case 3:
                 // UNINTERESTED - Set isInterested to false
-                isInterested[OtherPeer - 1001] = false;
-                writeLogMessage(OtherPeer, PreferredNeighbors, 0, 0, 8);
+                if(isInterested[OtherPeer-1001]) {
+                    isInterested[OtherPeer - 1001] = false;
+                    writeLogMessage(OtherPeer, PreferredNeighbors, 0, 0, 8);
+                }
                 break;
             case 4:
                 // HAVE
@@ -661,7 +669,7 @@ public class Peer {
     public synchronized void writeLogMessage(int Peer2, int[] prefNeighbors, int pieceIndex, int numPieces, int msgType) {
         try {
             int peer2ID = Peer2;
-            String path = "/log_peer_" + peer2ID + ".log";
+            String path = "/log_peer_" + peerID + ".log";
             File f1 = new File(path);
             FileWriter fileWriter = new FileWriter(f1.getName(), true);
             BufferedWriter bw = new BufferedWriter(fileWriter);
