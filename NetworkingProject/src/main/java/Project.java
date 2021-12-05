@@ -186,7 +186,7 @@ class Project extends Thread {
                 }
             }
 
-        do {
+
             for (int i = 0; i < cPeer.length; i++) {
                 try {
                     cPeer[i].sendRequest(ClientPeer.ChokeMsg());
@@ -194,11 +194,12 @@ class Project extends Thread {
                     e.printStackTrace();
                 }
             }
+            final boolean[] timerRunning = {false};
             Timer UnchokeInterval = new Timer();
             TimerTask Chk = new TimerTask() {
                 @Override
                 public void run() {
-
+                    timerRunning[0] = false;
                     for (int i = 0; i < cPeer.length; i++) {
                         try {
                             cPeer[i].sendRequest(ClientPeer.UnChokeMsg());
@@ -209,13 +210,36 @@ class Project extends Thread {
 
                 }
             };
-            UnchokeInterval.schedule(Chk, ClientPeer.unchokeInterval * 1000);
+            int pieceReq;
+            ArrayList<Integer> missing;
+            do {
+            if (!timerRunning[0]) {
+                UnchokeInterval.schedule(Chk, ClientPeer.unchokeInterval * 1000);
+                timerRunning[0] = true;
+            }
+            for (int i = 0; i< cPeer.length; i++) {
+                missing = ClientPeer.getIndexOfPiecesMissing();
+                try {
+                if(ClientPeer.getPeerID() - 1001 > i) {
+                    pieceReq = ClientPeer.FindPieceToRequest(1001 + i);
+                    if(pieceReq != -1)
+                        cPeer[i].sendRequest(ClientPeer.requestMessage(missing.get(pieceReq)));
+                }
+                else {
+                    pieceReq = ClientPeer.FindPieceToRequest(1002 + i);
+                    if(pieceReq!= -1)
+                        cPeer[i].sendRequest(ClientPeer.requestMessage(missing.get(pieceReq)));
+                }
+
+
+                } catch(IOException e) {
+                    e.printStackTrace();
+                }
+
+
+            }
         }while (ClientPeer.getHasFile());
 
-
-
-
-            boolean[][] track = ClientPeer.getHasPieces();
 
 
         }

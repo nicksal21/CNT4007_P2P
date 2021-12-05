@@ -164,6 +164,10 @@ public class Peer {
 
     public synchronized int getOptimisticUnchokeInterval(){return OptimisticUnchokeInterval;}
 
+    public synchronized ArrayList<Integer> getIndexOfPiecesMissing(){
+        return IndexOfPiecesMissing;
+    }
+
     public synchronized int getUnchokeInterval(){return unchokeInterval;}
 
     // Returns if the peer has the complete file or not
@@ -347,7 +351,21 @@ public class Peer {
                 writeLogMessage(OtherPeer, null, 0, 0, 4);
 
                 //send Req for Piece as soon as its unchoked
-                FindPieceToRequest(OtherPeer);
+                int nextpiece = FindPieceToRequest(OtherPeer);
+                if(nextpiece != -1) {
+                    try {
+                        if (OtherPeer < getPeerID())
+                            clients[OtherPeer - 1001].sendRequest(requestMessage(IndexOfPiecesMissing.get(nextpiece)));
+                        else
+                            clients[OtherPeer - 1002].sendRequest(requestMessage(IndexOfPiecesMissing.get(nextpiece)));
+
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+
                 break;
             case 2:
                 // INTERESTED - Set isInterested to true
@@ -506,7 +524,21 @@ public class Peer {
                     System.err.println("IOEX in Piece recieved");
                 }
 
-                FindPieceToRequest(OtherPeer);
+                int nextPiece = FindPieceToRequest(OtherPeer);
+                if(nextPiece != -1) {
+                    try {
+                        if (OtherPeer < getPeerID())
+                            clients[OtherPeer - 1001].sendRequest(requestMessage(IndexOfPiecesMissing.get(nextPiece)));
+                        else
+                            clients[OtherPeer - 1002].sendRequest(requestMessage(IndexOfPiecesMissing.get(nextPiece)));
+
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+
 
 
                 break;
@@ -514,7 +546,7 @@ public class Peer {
     }
 
     // Check for whether a peer has a desired file piece.
-    private synchronized void FindPieceToRequest(int OtherPeer) {
+    public synchronized int FindPieceToRequest(int OtherPeer) {
 
             //boolean dNHTFile = !hasFile;
             //for (int i = 0; i < hasPieces[peerID-1001].length; i++)
@@ -564,18 +596,9 @@ public class Peer {
                     }
                 }
 
-                try {
-                    if (OtherPeer < getPeerID())
-                        clients[OtherPeer - 1001].sendRequest(requestMessage(IndexOfPiecesMissing.get(randP)));
-                    else
-                        clients[OtherPeer - 1002].sendRequest(requestMessage(IndexOfPiecesMissing.get(randP)));
-
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                return randP;
             }
-
+        return -1;
     }
 
 
