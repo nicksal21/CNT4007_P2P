@@ -352,7 +352,7 @@ public class Peer {
 
                 //send Req for Piece as soon as its unchoked
                 int nextpiece = FindPieceToRequest(OtherPeer);
-                if(nextpiece != -1) {
+              /*  if(nextpiece != -1) {
                     try {
                         if (OtherPeer < getPeerID())
                             clients[OtherPeer - 1001].sendRequest(requestMessage(IndexOfPiecesMissing.get(nextpiece)));
@@ -363,7 +363,7 @@ public class Peer {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                }
+                }*/
 
 
                 break;
@@ -404,7 +404,6 @@ public class Peer {
                 //System.out.println("Have");
                 writeLogMessage(OtherPeer, null, OPH, 0, 6);
 
-                FindPieceToRequest(OtherPeer);
 
 
                 break;

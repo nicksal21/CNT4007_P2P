@@ -394,7 +394,8 @@ class Project extends Thread {
 
         //This checks if all the peers have the file, if so they will end the program
         boolean AllFinished;
-        int totalNumDone,numDone = 0;
+        int totalNumDone = 0;
+        int numDone = 0;
         boolean[][] peerProg = peersOnline.get(0).getHasPieces();
 
         do {
@@ -413,9 +414,10 @@ class Project extends Thread {
                     }
                 }
             }
-            totalNumDone = numDone;
-
-            System.out.println(totalNumDone);
+            if(totalNumDone != numDone) {
+                totalNumDone = numDone;
+                System.out.println(totalNumDone);
+            }
 
         } while (!AllFinished);
 
