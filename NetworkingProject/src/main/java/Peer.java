@@ -162,13 +162,17 @@ public class Peer {
         return wantToClose;
     }
 
-    public synchronized int getOptimisticUnchokeInterval(){return OptimisticUnchokeInterval;}
+    public synchronized int getOptimisticUnchokeInterval() {
+        return OptimisticUnchokeInterval;
+    }
 
-    public synchronized ArrayList<Integer> getIndexOfPiecesMissing(){
+    public synchronized ArrayList<Integer> getIndexOfPiecesMissing() {
         return IndexOfPiecesMissing;
     }
 
-    public synchronized int getUnchokeInterval(){return unchokeInterval;}
+    public synchronized int getUnchokeInterval() {
+        return unchokeInterval;
+    }
 
     // Returns if the peer has the complete file or not
     public synchronized boolean getHasFile() {
@@ -405,7 +409,6 @@ public class Peer {
                 writeLogMessage(OtherPeer, null, OPH, 0, 6);
 
 
-
                 break;
             case 5:
                 // BITFIELD
@@ -487,7 +490,7 @@ public class Peer {
                 int pIndex = ByteBuffer.wrap(pieceIndex).getInt();
                 filePieces[pIndex] = pieceRecieved;
                 hasPieces[peerID - 1001][pIndex] = true;
-                writeLogMessage(OtherPeer, null, pIndex, hasPieces[peerID-1001].length - IndexOfPiecesMissing.size(), 9);
+                writeLogMessage(OtherPeer, null, pIndex, hasPieces[peerID - 1001].length - IndexOfPiecesMissing.size(), 9);
 
                 int availableSlot = -1;
                 for (int i = 0; i < ReqPfromNeighbors.length; i++)
@@ -537,8 +540,6 @@ public class Peer {
                 }*/
 
 
-
-
                 break;
         }
     }
@@ -546,56 +547,56 @@ public class Peer {
     // Check for whether a peer has a desired file piece.
     public synchronized int FindPieceToRequest(int OtherPeer) {
 
-            //boolean dNHTFile = !hasFile;
-            //for (int i = 0; i < hasPieces[peerID-1001].length; i++)
-            //if (!hasPieces[peerID - 1001][i])
-            //dNHTFile = true;
+        //boolean dNHTFile = !hasFile;
+        //for (int i = 0; i < hasPieces[peerID-1001].length; i++)
+        //if (!hasPieces[peerID - 1001][i])
+        //dNHTFile = true;
 
-            // Making sure that we are not requesting what is already requested
-            boolean hasPieceNReq = false;
-            if (!hasFile) { // This peer doesn't have the file
+        // Making sure that we are not requesting what is already requested
+        boolean hasPieceNReq = false;
+        if (!hasFile) { // This peer doesn't have the file
 
-                for (int i = 0; i < IndexOfPiecesMissing.size(); i++) {//Looking through the OtherPeer for pieces we need
+            for (int i = 0; i < IndexOfPiecesMissing.size(); i++) {//Looking through the OtherPeer for pieces we need
 
-                    for (int j = 0; j < ReqPfromNeighbors.length; j++) {// Looking through what has been requested
+                for (int j = 0; j < ReqPfromNeighbors.length; j++) {// Looking through what has been requested
 
-                        if (hasPieces[OtherPeer - 1001][IndexOfPiecesMissing.get(i)] && ReqPfromNeighbors[j] != IndexOfPiecesMissing.get(i)) {// Has a piece we need and not requested yet
-                            hasPieceNReq = true;
-                        } else {
-                            hasPieceNReq = false;
-                            break;
-                        }
-                    }
-                }
-
-            }
-
-            if (!hasFile && hasPieceNReq) {
-                int randP = (int) (Math.random() * IndexOfPiecesMissing.size());
-                boolean ReqAlready = false;
-
-                // While the Other peers has a piece not already requested
-                do {
-                    for (int i = 0; i < ReqPfromNeighbors.length; i++) {
-                        if (ReqPfromNeighbors[i] != IndexOfPiecesMissing.get(randP) && hasPieces[OtherPeer - 1001][IndexOfPiecesMissing.get(randP)]) {
-                            ReqAlready = false;
-                        } else {
-                            ReqAlready = true;
-                            randP = (int) (Math.random() * IndexOfPiecesMissing.size());
-                            break;
-                        }
-                    }
-                } while (ReqAlready);
-
-                for (int i = 0; i < ReqPfromNeighbors.length; i++) {
-                    if (ReqPfromNeighbors[i] == -1) {
-                        ReqPfromNeighbors[i] = IndexOfPiecesMissing.get(randP);
+                    if (hasPieces[OtherPeer - 1001][IndexOfPiecesMissing.get(i)] && ReqPfromNeighbors[j] != IndexOfPiecesMissing.get(i)) {// Has a piece we need and not requested yet
+                        hasPieceNReq = true;
+                    } else {
+                        hasPieceNReq = false;
                         break;
                     }
                 }
-
-                return randP;
             }
+
+        }
+
+        if (!hasFile && hasPieceNReq) {
+            int randP = (int) (Math.random() * IndexOfPiecesMissing.size());
+            boolean ReqAlready = false;
+
+            // While the Other peers has a piece not already requested
+            do {
+                for (int i = 0; i < ReqPfromNeighbors.length; i++) {
+                    if (ReqPfromNeighbors[i] != IndexOfPiecesMissing.get(randP) && hasPieces[OtherPeer - 1001][IndexOfPiecesMissing.get(randP)]) {
+                        ReqAlready = false;
+                    } else {
+                        ReqAlready = true;
+                        randP = (int) (Math.random() * IndexOfPiecesMissing.size());
+                        break;
+                    }
+                }
+            } while (ReqAlready);
+
+            for (int i = 0; i < ReqPfromNeighbors.length; i++) {
+                if (ReqPfromNeighbors[i] == -1) {
+                    ReqPfromNeighbors[i] = IndexOfPiecesMissing.get(randP);
+                    break;
+                }
+            }
+
+            return randP;
+        }
         return -1;
     }
 
@@ -684,10 +685,10 @@ public class Peer {
         }
     }
 
-   // public synchronized int[] PerferredNeighborCalc(){
+    // public synchronized int[] PerferredNeighborCalc(){
     //
 
-   // }
+    // }
 
     // Print the Peer details
     public synchronized void printPeerInfo() {

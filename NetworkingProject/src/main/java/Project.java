@@ -213,33 +213,31 @@ class Project extends Thread {
             int pieceReq;
             ArrayList<Integer> missing;
             do {
-            if (!timerRunning[0]) {
-                //UnchokeInterval.schedule(Chk, ClientPeer.unchokeInterval * 1000);
-                timerRunning[0] = true;
-            }
-            for (int i = 0; i< cPeer.length; i++) {
-                missing = ClientPeer.getIndexOfPiecesMissing();
-                try {
-                if(ClientPeer.getPeerID() - 1001 > i) {
-                    pieceReq = ClientPeer.FindPieceToRequest(1001 + i);
-                    if(pieceReq != -1)
-                        cPeer[i].sendRequest(ClientPeer.requestMessage(missing.get(pieceReq)));
+                if (!timerRunning[0]) {
+                    //UnchokeInterval.schedule(Chk, ClientPeer.unchokeInterval * 1000);
+                    timerRunning[0] = true;
                 }
-                else {
-                    pieceReq = ClientPeer.FindPieceToRequest(1002 + i);
-                    if(pieceReq!= -1)
-                        cPeer[i].sendRequest(ClientPeer.requestMessage(missing.get(pieceReq)));
+                for (int i = 0; i < cPeer.length; i++) {
+                    missing = ClientPeer.getIndexOfPiecesMissing();
+                    try {
+                        if (ClientPeer.getPeerID() - 1001 > i) {
+                            pieceReq = ClientPeer.FindPieceToRequest(1001 + i);
+                            if (pieceReq != -1)
+                                cPeer[i].sendRequest(ClientPeer.requestMessage(missing.get(pieceReq)));
+                        } else {
+                            pieceReq = ClientPeer.FindPieceToRequest(1002 + i);
+                            if (pieceReq != -1)
+                                cPeer[i].sendRequest(ClientPeer.requestMessage(missing.get(pieceReq)));
+                        }
+
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+
                 }
-
-
-                } catch(IOException e) {
-                    e.printStackTrace();
-                }
-
-
-            }
-        }while (!ClientPeer.getHasFile());
-
+            } while (!ClientPeer.getHasFile());
 
 
         }
@@ -407,14 +405,12 @@ class Project extends Thread {
                 for (int j = 0; j < peerProg[i].length; j++) {
                     if (!peerProg[i][j]) {
                         AllFinished = false;
-                    }
-                    else
-                    {
-                        numDone ++;
+                    } else {
+                        numDone++;
                     }
                 }
             }
-            if(totalNumDone != numDone) {
+            if (totalNumDone != numDone) {
                 totalNumDone = numDone;
                 System.out.println(totalNumDone);
             }
@@ -423,7 +419,7 @@ class Project extends Thread {
 
         System.out.println("All Peers have File");
         for (int i = 0; i < threads.length; i++)
-                threads[i].stop();
+            threads[i].stop();
         for (int i = 0; i < cThreads.length; i++)
             cThreads[i].stop();
 
