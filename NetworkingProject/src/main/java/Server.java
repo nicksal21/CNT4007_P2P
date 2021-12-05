@@ -5,6 +5,7 @@ package main.java;
 // Imports
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.net.*;
 
@@ -133,27 +134,34 @@ public class Server extends Thread { // https://www.baeldung.com/a-guide-to-java
             try {
                 OutputStream outMsg = clientSocket.getOutputStream();
                 in = clientSocket.getInputStream();
+                int cReqLength;
+                byte[] MsgReq;
 
-                InputStreamReader inMsg = new InputStreamReader(in);
-                BufferedReader MsgRead = new BufferedReader(inMsg);
-                String handshakeMsg = "";
+                DataInputStream sentReq = new DataInputStream(in);
+
                 boolean hand = false;
-
+                String handshakeMsg = "";
                 while (!hand) {
+                    cReqLength = sentReq.readInt();
+                    MsgReq = new byte[cReqLength];
+                    sentReq.readFully(MsgReq);
+
+                    handshakeMsg = new String(MsgReq, StandardCharsets.UTF_8);
+
                     //boolean checkCond = !Objects.equals(handshakeMsg, "P2PFILESHARINGPROJ0000000000"+key);
-                    handshakeMsg = MsgRead.readLine();
                     if (!handshakeMsg.isEmpty())
                         hand = Objects.equals(handshakeMsg.substring(0, 28), "P2PFILESHARINGPROJ0000000000");
                 }
 
                 Clientkey = Integer.parseInt(handshakeMsg.substring(28, 32));
                 handshakeMsg = handshakeMsg.substring(0, 28) + ServerKey;
-                PrintWriter pr = new PrintWriter(outMsg);
-                pr.println(handshakeMsg);
-                pr.flush();
-                DataInputStream sentReq = new DataInputStream(in);
-                int cReqLength = sentReq.readInt();
-                byte[] MsgReq = new byte[cReqLength];
+                System.out.println(handshakeMsg);
+                //PrintWriter pr = new PrintWriter(outMsg);
+                //pr.println(handshakeMsg);
+                //pr.flush();
+               sentReq = new DataInputStream(in);
+               cReqLength = sentReq.readInt();
+               MsgReq = new byte[cReqLength];
                 sentReq.readFully(MsgReq);
 
                 while (true) {

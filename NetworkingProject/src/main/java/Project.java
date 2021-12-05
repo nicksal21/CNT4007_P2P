@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /*
@@ -213,31 +214,33 @@ class Project extends Thread {
             int pieceReq;
             ArrayList<Integer> missing;
             do {
-                if (!timerRunning[0]) {
-                    //UnchokeInterval.schedule(Chk, ClientPeer.unchokeInterval * 1000);
-                    timerRunning[0] = true;
+            if (!timerRunning[0]) {
+                //UnchokeInterval.schedule(Chk, ClientPeer.unchokeInterval * 1000);
+                timerRunning[0] = true;
+            }
+            for (int i = 0; i< cPeer.length; i++) {
+                missing = ClientPeer.getIndexOfPiecesMissing();
+                try {
+                if(ClientPeer.getPeerID() - 1001 > i) {
+                    pieceReq = ClientPeer.FindPieceToRequest(1001 + i);
+                    if(pieceReq != -1)
+                        cPeer[i].sendRequest(ClientPeer.requestMessage(missing.get(pieceReq)));
                 }
-                for (int i = 0; i < cPeer.length; i++) {
-                    missing = ClientPeer.getIndexOfPiecesMissing();
-                    try {
-                        if (ClientPeer.getPeerID() - 1001 > i) {
-                            pieceReq = ClientPeer.FindPieceToRequest(1001 + i);
-                            if (pieceReq != -1)
-                                cPeer[i].sendRequest(ClientPeer.requestMessage(missing.get(pieceReq)));
-                        } else {
-                            pieceReq = ClientPeer.FindPieceToRequest(1002 + i);
-                            if (pieceReq != -1)
-                                cPeer[i].sendRequest(ClientPeer.requestMessage(missing.get(pieceReq)));
-                        }
-
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-
+                else {
+                    pieceReq = ClientPeer.FindPieceToRequest(1002 + i);
+                    if(pieceReq!= -1)
+                        cPeer[i].sendRequest(ClientPeer.requestMessage(missing.get(pieceReq)));
                 }
-            } while (!ClientPeer.getHasFile());
+
+
+                } catch(IOException e) {
+                    e.printStackTrace();
+                }
+
+
+            }
+        }while (!ClientPeer.getHasFile());
+
 
 
         }
@@ -349,7 +352,9 @@ class Project extends Thread {
                     //Handshake need to make it byte[]
                     String handshakeMessage = "P2PFILESHARINGPROJ0000000000";
                     handshakeMessage += keySet[i];
-                    client.handMessage(handshakeMessage);
+                    byte[] handShake = handshakeMessage.getBytes(StandardCharsets.UTF_8);
+                    //client.handMessage(handshakeMessage);
+                    client.sendRequest(handShake);
                     clients[i][j - foundDup] = client;
                 } else
                     foundDup = 1;
@@ -405,12 +410,14 @@ class Project extends Thread {
                 for (int j = 0; j < peerProg[i].length; j++) {
                     if (!peerProg[i][j]) {
                         AllFinished = false;
-                    } else {
-                        numDone++;
+                    }
+                    else
+                    {
+                        numDone ++;
                     }
                 }
             }
-            if (totalNumDone != numDone) {
+            if(totalNumDone != numDone) {
                 totalNumDone = numDone;
                 System.out.println(totalNumDone);
             }
@@ -419,7 +426,7 @@ class Project extends Thread {
 
         System.out.println("All Peers have File");
         for (int i = 0; i < threads.length; i++)
-            threads[i].stop();
+                threads[i].stop();
         for (int i = 0; i < cThreads.length; i++)
             cThreads[i].stop();
 
