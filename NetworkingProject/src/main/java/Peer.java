@@ -45,6 +45,8 @@ public class Peer {
 
     int[] PerferedNeighbors;
     int[] filesTranseredToPN;
+    int OptPeer;
+    int fileTransferedToOPN;
 
 
     // This is the constructor of the class Peer
@@ -347,23 +349,11 @@ public class Peer {
                 break;
             case 1:
                 // UNCHOKE - Set isChoked to false
+
+                //If the peer correlates to an preferred neighbor
                 isChoked[OtherPeer - 1001] = false;
                 writeLogMessage(OtherPeer, null, 0, 0, 4);
 
-                //send Req for Piece as soon as its unchoked
-               // int nextpiece = FindPieceToRequest(OtherPeer);
-              /*  if(nextpiece != -1) {
-                    try {
-                        if (OtherPeer < getPeerID())
-                            clients[OtherPeer - 1001].sendRequest(requestMessage(IndexOfPiecesMissing.get(nextpiece)));
-                        else
-                            clients[OtherPeer - 1002].sendRequest(requestMessage(IndexOfPiecesMissing.get(nextpiece)));
-
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }*/
 
 
                 break;
@@ -685,10 +675,6 @@ public class Peer {
         }
     }
 
-   // public synchronized int[] PerferredNeighborCalc(){
-    //
-
-   // }
 
     // Print the Peer details
     public synchronized void printPeerInfo() {

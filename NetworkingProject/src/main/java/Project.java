@@ -190,34 +190,15 @@ class Project extends Thread {
 
             for (int i = 0; i < cPeer.length; i++) {
                 try {
-                    cPeer[i].sendRequest(ClientPeer.UnChokeMsg());
+                    cPeer[i].sendRequest(ClientPeer.ChokeMsg());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-            final boolean[] timerRunning = {false};
-            Timer UnchokeInterval = new Timer();
-            TimerTask Chk = new TimerTask() {
-                @Override
-                public void run() {
-                    timerRunning[0] = false;
-                    for (int i = 0; i < cPeer.length; i++) {
-                        try {
-                            cPeer[i].sendRequest(ClientPeer.UnChokeMsg());
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
 
-                }
-            };
             int pieceReq;
             ArrayList<Integer> missing;
             do {
-            if (!timerRunning[0]) {
-                //UnchokeInterval.schedule(Chk, ClientPeer.unchokeInterval * 1000);
-                timerRunning[0] = true;
-            }
             for (int i = 0; i< cPeer.length; i++) {
                 missing = ClientPeer.getIndexOfPiecesMissing();
                 try {
@@ -395,16 +376,47 @@ class Project extends Thread {
             cThreads[k].start();
         }
 
+        //TIMER
+        final boolean[] timerRunning = {false, false};
+        Timer UnchokeInterval = new Timer();
+        TimerTask Chk = new TimerTask() {
+            @Override
+            public void run() {
+                timerRunning[0] = false;
+                for (int i = 0; i < peersOnline.size(); i++)
+                    peersOnline.get(i).determinePreferredNeighbors();
+            }
+        };
+        Timer OPUnchokeInterval = new Timer();
+        TimerTask Op = new TimerTask() {
+            @Override
+            public void run() {
+                timerRunning[1] = false;
+                for (int i = 0; i < peersOnline.size(); i++)
+                    peersOnline.get(i).determineOpNeighbors();
+            }
+        };
+
+
+
         //This checks if all the peers have the file, if so they will end the program
         boolean AllFinished;
         int totalNumDone = 0;
         int numDone = 0;
         boolean[][] peerProg = peersOnline.get(0).getHasPieces();
-
         do {
             peerProg = peersOnline.get(0).getHasPieces();
             AllFinished = true;
             numDone = 0;
+
+            if (!timerRunning[0]) {
+                //UnchokeInterval.schedule(Chk, peersOnline.get(0).unchokeInterval * 1000);
+                timerRunning[0] = true;
+            }
+            if(!timerRunning[1]){
+                //OpUnchokeInterval.schedule(Op, peersOnline.get(0).OptimisticUnchokeInterval * 1000);
+                timerRunning[1] = true;
+            }
 
             for (int i = 0; i < peerProg.length; i++) {
                 for (int j = 0; j < peerProg[i].length; j++) {
