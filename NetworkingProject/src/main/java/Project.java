@@ -189,7 +189,7 @@ class Project extends Thread {
 
             for (int i = 0; i < cPeer.length; i++) {
                 try {
-                    cPeer[i].sendRequest(ClientPeer.ChokeMsg());
+                    cPeer[i].sendRequest(ClientPeer.UnChokeMsg());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -214,7 +214,7 @@ class Project extends Thread {
             ArrayList<Integer> missing;
             do {
             if (!timerRunning[0]) {
-                UnchokeInterval.schedule(Chk, ClientPeer.unchokeInterval * 1000);
+                //UnchokeInterval.schedule(Chk, ClientPeer.unchokeInterval * 1000);
                 timerRunning[0] = true;
             }
             for (int i = 0; i< cPeer.length; i++) {
@@ -238,7 +238,7 @@ class Project extends Thread {
 
 
             }
-        }while (ClientPeer.getHasFile());
+        }while (!ClientPeer.getHasFile());
 
 
 

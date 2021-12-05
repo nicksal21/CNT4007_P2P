@@ -351,8 +351,8 @@ public class Peer {
                 writeLogMessage(OtherPeer, null, 0, 0, 4);
 
                 //send Req for Piece as soon as its unchoked
-                int nextpiece = FindPieceToRequest(OtherPeer);
-              /*  if(nextpiece != -1) {
+              /*  int nextpiece = FindPieceToRequest(OtherPeer);
+                if(nextpiece != -1) {
                     try {
                         if (OtherPeer < getPeerID())
                             clients[OtherPeer - 1001].sendRequest(requestMessage(IndexOfPiecesMissing.get(nextpiece)));
@@ -487,7 +487,7 @@ public class Peer {
                 int pIndex = ByteBuffer.wrap(pieceIndex).getInt();
                 filePieces[pIndex] = pieceRecieved;
                 hasPieces[peerID - 1001][pIndex] = true;
-
+                writeLogMessage(OtherPeer, null, pIndex, hasPieces[peerID-1001].length - IndexOfPiecesMissing.size(), 9);
 
                 int availableSlot = -1;
                 for (int i = 0; i < ReqPfromNeighbors.length; i++)
@@ -500,7 +500,6 @@ public class Peer {
                     if (IndexOfPiecesMissing.get(i) == pIndex) {
                         IndexOfPiecesMissing.remove(i);
                     }
-                writeLogMessage(OtherPeer, null, pIndex, hasPieces[peerID-1001].length - IndexOfPiecesMissing.size(), 9);
 
                 if (!hasFile) {
                     boolean check = true;
@@ -523,7 +522,7 @@ public class Peer {
                     System.err.println("IOEX in Piece recieved");
                 }
 
-                int nextPiece = FindPieceToRequest(OtherPeer);
+               /* int nextPiece = FindPieceToRequest(OtherPeer);
                 if(nextPiece != -1) {
                     try {
                         if (OtherPeer < getPeerID())
@@ -535,7 +534,7 @@ public class Peer {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                }
+                }*/
 
 
 
