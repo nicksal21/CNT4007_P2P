@@ -376,8 +376,16 @@ public class Peer {
                 int OPH = ByteBuffer.wrap(OPhave).getInt();
                 hasPieces[OtherPeer - 1001][OPH] = true;
 
+                boolean ThisPeerIsInterested = false;
+                for (int i  =  0; i < hasPieces[peerID-1001].length; i++){
+                    if(hasPieces[peerID-1001][i] != hasPieces[OtherPeer-1001][i] && hasPieces[OtherPeer-1001][i]) {
+                        ThisPeerIsInterested = true;
+                        break;
+                    }
+                }
+
                 try {
-                    if (!hasPieces[peerID - 1001][OPH]) {
+                    if (ThisPeerIsInterested) {
                         if (OtherPeer < getPeerID())
                             clients[OtherPeer - 1001].sendRequest(InterestedMsg());
                         else
