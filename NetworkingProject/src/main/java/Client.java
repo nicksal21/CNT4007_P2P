@@ -33,8 +33,8 @@ public class Client extends Thread {
 
     // Starts client socket and IO file streams
     public void startConnection(String ip, int port) throws IOException {
-        //clientSocket = new Socket("10.3.0.169", port);
-        clientSocket = new Socket("10.140.109.23", port);
+        clientSocket = new Socket("10.2.0.224", port);
+        //clientSocket = new Socket("10.140.109.23", port);
         out = clientSocket.getOutputStream();
         in = clientSocket.getInputStream();
     }

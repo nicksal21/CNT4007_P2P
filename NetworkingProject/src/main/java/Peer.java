@@ -632,7 +632,7 @@ public class Peer {
     public synchronized void writeLogMessage(int Peer2, int[] prefNeighbors, int pieceIndex, int numPieces, int msgType) {
         try {
             int peer2ID = Peer2;
-            String path = "/log_peer_" + peer2ID + ".log";
+            String path = "/log_peer_" + peerID + ".log";
             File f1 = new File(path);
             FileWriter fileWriter = new FileWriter(f1.getName(), true);
             BufferedWriter bw = new BufferedWriter(fileWriter);
