@@ -73,9 +73,14 @@ public class Peer {
         this.server = server;
         this.clients = clients;
 
-        //ReqPfromNeighbors = new int[Integer.parseInt(commonInfo.get("NumberOfPreferredNeighbors"))];
-        ReqPfromNeighbors = new int[isChoked.length];
+        ReqPfromNeighbors = new int[Integer.parseInt(commonInfo.get("NumberOfPreferredNeighbors"))];
+        PreferredNeighbors = new int[Integer.parseInt(commonInfo.get("NumberOfPreferredNeighbors"))];
+        Arrays.fill(PreferredNeighbors, -1);
         Arrays.fill(ReqPfromNeighbors, -1);
+        filesTranseredToPN = new int[PreferredNeighbors.length];
+        Arrays.fill(filesTranseredToPN, 0);
+        OptPeer = 0;
+        fileTransferedToOPN = 0;
 
         OptimisticUnchokeInterval = Integer.parseInt(commonInfo.get("OptimisticUnchokingInterval"));
         unchokeInterval = Integer.parseInt(commonInfo.get("UnchokingInterval"));
@@ -345,14 +350,23 @@ public class Peer {
             case 0:
                 // CHOKE - Set isChoked to true
                 isChoked[OtherPeer - 1001] = true;
-                writeLogMessage(OtherPeer, null, 0, 0, 5);
+                writeLogMessage(OtherPeer, PreferredNeighbors, 0, 0, 5);
                 break;
             case 1:
                 // UNCHOKE - Set isChoked to false
 
-                //If the peer correlates to an preferred neighbor
-                isChoked[OtherPeer - 1001] = false;
-                writeLogMessage(OtherPeer, null, 0, 0, 4);
+                //If the peer correlates to a preferred neighbor
+                boolean preFNeighbor = false;
+                for(int i = 0; i< PreferredNeighbors.length; i++){
+                    if(OtherPeer == PreferredNeighbors[i]){
+                        preFNeighbor = true;
+                        break;
+                    }
+                }
+                if(preFNeighbor || OtherPeer == OptPeer) {
+                    isChoked[OtherPeer - 1001] = false;
+                    writeLogMessage(OtherPeer, PreferredNeighbors, 0, 0, 4);
+                }
 
 
 
@@ -360,12 +374,12 @@ public class Peer {
             case 2:
                 // INTERESTED - Set isInterested to true
                 isInterested[OtherPeer - 1001] = true;
-                writeLogMessage(OtherPeer, null, 0, 0, 7);
+                writeLogMessage(OtherPeer, PreferredNeighbors, 0, 0, 7);
                 break;
             case 3:
                 // UNINTERESTED - Set isInterested to false
                 isInterested[OtherPeer - 1001] = false;
-                writeLogMessage(OtherPeer, null, 0, 0, 8);
+                writeLogMessage(OtherPeer, PreferredNeighbors, 0, 0, 8);
                 break;
             case 4:
                 // HAVE
@@ -400,7 +414,7 @@ public class Peer {
                     e.printStackTrace();
                 }
                 //System.out.println("Have");
-                writeLogMessage(OtherPeer, null, OPH, 0, 6);
+                writeLogMessage(OtherPeer, PreferredNeighbors, OPH, 0, 6);
 
 
 
@@ -450,25 +464,41 @@ public class Peer {
                 // REQUEST
                 // TODO: IMPLEMENT REQUEST
                 // After initial BITFIELD you need to request the pieces that are needed
-                //System.out.println("Request");
+
+                // Check for any preferred neighbors
+
+
                 if (!isChoked[OtherPeer - 1001]) {
-                    byte[] OPReq = new byte[4];
-                    for (int i = 5; i < message.length; i++)
-                        OPReq[i - 5] = message[i];
 
-                    int OPReqed = ByteBuffer.wrap(OPReq).getInt();
-
-                    try {
-                        if (OtherPeer < getPeerID())
-                            clients[OtherPeer - 1001].sendRequest(pieceMessage(OPReqed));
-                        else
-                            clients[OtherPeer - 1002].sendRequest(pieceMessage(OPReqed));
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                    boolean isPreferred = false;
+                    for(int i = 0; i < PreferredNeighbors.length; i++){
+                        if(PreferredNeighbors[i] == OtherPeer){
+                            filesTranseredToPN[i]++;
+                            isPreferred = true;
+                            break;
+                        }
                     }
 
+                    if(isPreferred || OtherPeer == OptPeer) {
+                        if(OtherPeer == OptPeer)
+                            fileTransferedToOPN++;
+                        byte[] OPReq = new byte[4];
+                        for (int i = 5; i < message.length; i++)
+                            OPReq[i - 5] = message[i];
 
+                        int OPReqed = ByteBuffer.wrap(OPReq).getInt();
+
+                        try {
+                            if (OtherPeer < getPeerID())
+                                clients[OtherPeer - 1001].sendRequest(pieceMessage(OPReqed));
+                            else
+                                clients[OtherPeer - 1002].sendRequest(pieceMessage(OPReqed));
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
                 }
                 break;
             case 7:

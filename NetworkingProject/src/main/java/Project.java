@@ -382,9 +382,25 @@ class Project extends Thread {
         TimerTask Chk = new TimerTask() {
             @Override
             public void run() {
-                timerRunning[0] = false;
-                for (int i = 0; i < peersOnline.size(); i++)
-                    peersOnline.get(i).determinePreferredNeighbors();
+                try {
+                    timerRunning[0] = false;
+                    for (int p = 0; p < peersOnline.size(); p++) {
+                        for (int c = 0; c < clients[0].length; c++) {
+                            clients[p][c].sendRequest(peersOnline.get(p).ChokeMsg());
+                        }
+                    }
+                    for (int i = 0; i < peersOnline.size(); i++)
+                        peersOnline.get(i).determinePreferredNeighbors();
+
+                    for (int p = 0; p < peersOnline.size(); p++) {
+                        for (int c = 0; c < clients[0].length; c++) {
+                            clients[p][c].sendRequest(peersOnline.get(p).UnChokeMsg());
+                        }
+                    }
+
+                }catch (IOException e){
+                    e.printStackTrace();
+                }
             }
         };
         Timer OPUnchokeInterval = new Timer();
@@ -394,6 +410,18 @@ class Project extends Thread {
                 timerRunning[1] = false;
                 for (int i = 0; i < peersOnline.size(); i++)
                     peersOnline.get(i).determineOpNeighbors();
+
+                for (int p = 0; p < peersOnline.size(); p++) {
+                    for (int c = 0; c < clients[0].length; c++) {
+                        try {
+                            clients[p][c].sendRequest(peersOnline.get(p).UnChokeMsg());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
+
             }
         };
 
@@ -404,19 +432,15 @@ class Project extends Thread {
         int totalNumDone = 0;
         int numDone = 0;
         boolean[][] peerProg = peersOnline.get(0).getHasPieces();
+
+        UnchokeInterval.schedule(Chk, peersOnline.get(0).unchokeInterval * 1000);
+        OPUnchokeInterval.schedule(Op, peersOnline.get(0).OptimisticUnchokeInterval * 1000);
+
         do {
             peerProg = peersOnline.get(0).getHasPieces();
             AllFinished = true;
             numDone = 0;
 
-            if (!timerRunning[0]) {
-                //UnchokeInterval.schedule(Chk, peersOnline.get(0).unchokeInterval * 1000);
-                timerRunning[0] = true;
-            }
-            if(!timerRunning[1]){
-                //OpUnchokeInterval.schedule(Op, peersOnline.get(0).OptimisticUnchokeInterval * 1000);
-                timerRunning[1] = true;
-            }
 
             for (int i = 0; i < peerProg.length; i++) {
                 for (int j = 0; j < peerProg[i].length; j++) {
