@@ -163,6 +163,7 @@ class Project extends Thread {
         Client[] cPeer;
         int key;
         Peer ClientPeer;
+        boolean Finished;
 
         PeerClientBehavior(Client[] peer, int k, Peer ClientP) {
             key = k;
@@ -222,7 +223,6 @@ class Project extends Thread {
 
             }
         }while (!ClientPeer.getHasFile());
-
 
 
         }
@@ -462,13 +462,20 @@ class Project extends Thread {
         } while (!AllFinished);
 
         System.out.println("All Peers have File");
-        for (int i = 0; i < threads.length; i++)
-                threads[i].stop();
-        for (int i = 0; i < cThreads.length; i++)
-            cThreads[i].stop();
+          /*  try {
+                for (int i = 0; i < threads.length; i++)
+                    threads[i].join();
+                for (int i = 0; i < cThreads.length; i++)
+                    cThreads[i].join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } */
+
         for (int i = 0; i < peersOnline.size(); i++)
-            if(i!=1 || i!=5)
+            if(i!=0 || i!=5)
                 peersOnline.get(i).savePiecesAsFile();
+        System.out.println("AllFilesArePrinted");
+        System.exit(0);
 
         /*
          * To-do list

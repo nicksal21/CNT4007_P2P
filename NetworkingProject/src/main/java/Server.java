@@ -163,14 +163,22 @@ public class Server extends Thread { // https://www.baeldung.com/a-guide-to-java
                cReqLength = sentReq.readInt();
                MsgReq = new byte[cReqLength];
                 sentReq.readFully(MsgReq);
-
-                while (true) {
+                boolean peersNeedPieces = true;
+                while (peersNeedPieces) {
                     if(MsgReq.length > 4)
                         ServerPeer.interpretMessage(Clientkey, MsgReq);
                     cReqLength = sentReq.readInt();
                     MsgReq = new byte[cReqLength];
                     sentReq.readFully(MsgReq);
-
+                    boolean[][] check = ServerPeer.getHasPieces();
+                    for (int i = 0; i < check.length; i++){
+                        if(Arrays.asList(check[i]).contains(false))
+                            break;
+                        else {
+                            if(i == 9)
+                                peersNeedPieces = false;
+                        }
+                    }
 
                 }
 
