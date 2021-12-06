@@ -515,52 +515,53 @@ public class Peer {
             case 7:
                 // PIECE
                 // TODO: IMPLEMENT PIECE
-                byte[] pieceIndex = new byte[4];
-                byte[] pieceRecieved = new byte[PieceSize];
-                for (int i = 5; i < message.length; i++) {
-                    if (i < 9)
-                        pieceIndex[i - 5] = message[i];
-                    else
-                        pieceRecieved[i - 9] = message[i];
-                }
-                int pIndex = ByteBuffer.wrap(pieceIndex).getInt();
-                filePieces[pIndex] = pieceRecieved;
-                hasPieces[peerID - 1001][pIndex] = true;
-
-
-                int availableSlot = -1;
-                for (int i = 0; i < ReqPfromNeighbors.length; i++)
-                    if (ReqPfromNeighbors[i] == pIndex) {
-                        ReqPfromNeighbors[i] = -1;
-                        availableSlot = i;
+                if(!hasFile) {
+                    byte[] pieceIndex = new byte[4];
+                    byte[] pieceReceived = new byte[PieceSize];
+                    for (int i = 5; i < message.length; i++) {
+                        if (i < 9)
+                            pieceIndex[i - 5] = message[i];
+                        else
+                            pieceReceived[i - 9] = message[i];
                     }
+                    int pIndex = ByteBuffer.wrap(pieceIndex).getInt();
+                    filePieces[pIndex] = pieceReceived;
+                    hasPieces[peerID - 1001][pIndex] = true;
 
-                for (int i = 0; i < IndexOfPiecesMissing.size(); i++)
-                    if (IndexOfPiecesMissing.get(i) == pIndex) {
-                        IndexOfPiecesMissing.remove(i);
-                    }
-                writeLogMessage(OtherPeer, null, pIndex, hasPieces[peerID-1001].length - IndexOfPiecesMissing.size(), 9);
 
-                if (!hasFile) {
-                    boolean check = true;
-                    for (int i = 0; i < hasPieces[peerID - 1001].length; i++) {
-
-                        if (!hasPieces[peerID - 1001][i]) {
-                            check = false;
-                            break;
+                    int availableSlot = -1;
+                    for (int i = 0; i < ReqPfromNeighbors.length; i++)
+                        if (ReqPfromNeighbors[i] == pIndex) {
+                            ReqPfromNeighbors[i] = -1;
+                            availableSlot = i;
                         }
 
-                    }
-                    hasFile = check;
-                }
+                    for (int i = 0; i < IndexOfPiecesMissing.size(); i++)
+                        if (IndexOfPiecesMissing.get(i) == pIndex) {
+                            IndexOfPiecesMissing.remove(i);
+                        }
+                    writeLogMessage(OtherPeer, PreferredNeighbors, pIndex, hasPieces[peerID - 1001].length - IndexOfPiecesMissing.size(), 9);
 
-                // Once 'receive' a piece send HAVE to all the other Peers
-                try {
-                    for (int i = 0; i < clients.length; i++)
-                        clients[i].sendRequest(haveMsg(pIndex));
-                } catch (IOException e) {
-                    System.err.println("IOEX in Piece recieved");
-                }
+                    if (!hasFile) {
+                        boolean check = true;
+                        for (int i = 0; i < hasPieces[peerID - 1001].length; i++) {
+
+                            if (!hasPieces[peerID - 1001][i]) {
+                                check = false;
+                                break;
+                            }
+
+                        }
+                        hasFile = check;
+                    }
+
+                    // Once 'receive' a piece send HAVE to all the other Peers
+                    try {
+                        for (int i = 0; i < clients.length; i++)
+                            clients[i].sendRequest(haveMsg(pIndex));
+                    } catch (IOException e) {
+                        System.err.println("IOEX in Piece recieved");
+                    }
 
                 /*int nextPiece = FindPieceToRequest(OtherPeer);
                 if(nextPiece != -1) {
@@ -579,6 +580,7 @@ public class Peer {
 
 
             */
+                }
                 break;
         }
     }
