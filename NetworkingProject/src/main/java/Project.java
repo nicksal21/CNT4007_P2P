@@ -466,6 +466,9 @@ class Project extends Thread {
                 threads[i].stop();
         for (int i = 0; i < cThreads.length; i++)
             cThreads[i].stop();
+        for (int i = 0; i < peersOnline.size(); i++)
+            if(i!=1 || i!=5)
+                peersOnline.get(i).savePiecesAsFile();
 
         /*
          * To-do list

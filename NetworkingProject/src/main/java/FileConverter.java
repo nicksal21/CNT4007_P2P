@@ -1,9 +1,6 @@
 package main.java;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.LinkedHashMap;
 
 public class FileConverter {
@@ -23,14 +20,22 @@ public class FileConverter {
     }
 
     // owo
-    public static void byteToFile(byte[][] fBytArray, String saveLoc, LinkedHashMap<String, String> common) throws IOException {
+    public static void byteToFile(byte[][] fBytArray, String Dir, String saveLoc, LinkedHashMap<String, String> common) throws IOException {
         int PieceSize = Integer.parseInt(common.get("PieceSize"));
         int fileSize = Integer.parseInt(common.get("FileSize"));
         byte[] fBytes = new byte[fileSize];
         for (int i = 0; i < fileSize; i++)
             fBytes[i] = fBytArray[(int) Math.floor((double) fileSize / PieceSize)][i % PieceSize];
 
+
+        File Directory = new File(Dir);
+        if(!Directory.exists()){
+            Directory.mkdir();
+        }
+
+
         try (FileOutputStream byteToF = new FileOutputStream(saveLoc)) {
+
             byteToF.write(fBytes);
             byteToF.close();
         } catch (Exception e) {

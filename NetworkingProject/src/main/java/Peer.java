@@ -37,6 +37,7 @@ public class Peer {
     private FileConverter fc;
     private LinkedHashMap<Integer, Byte[]> peerBitfields;
     private LinkedHashMap<Integer, String[]> AllPeers;
+    private LinkedHashMap<String, String> commonInfo;
     private ArrayList<Integer> IndexOfPiecesMissing;
     private int PieceSize;
     private int fileSize;
@@ -51,7 +52,7 @@ public class Peer {
 
     // This is the constructor of the class Peer
     public Peer(int key, LinkedHashMap<Integer, String[]> peerInfo, LinkedHashMap<String,
-            String> commonInfo, Server server, Client[] clients) throws IOException {
+            String> cInfo, Server server, Client[] clients) throws IOException {
         //Sets all peer object variable to the info obtained from reading peerInfo.cfg and commonInfo.cfg
         hostName = peerInfo.get(key)[0];
         listeningPort = Integer.parseInt(peerInfo.get(key)[1]);
@@ -61,7 +62,7 @@ public class Peer {
         //Sets all arrays of isChoked and isInterested to false
         isChoked = new boolean[peerInfo.size()];
         isInterested = new boolean[peerInfo.size()];
-        //UnchkInterval = new Timer();
+        commonInfo = cInfo;
 
         for (int i = 0; i < peerInfo.size(); i++) {
             isChoked[i] = false;
@@ -430,43 +431,45 @@ public class Peer {
             case 5:
                 // BITFIELD
                 //As soon as a BitFieldRequest is sent
-                byte[] bFieldResp = getBitFieldMessage();
+                if(message.length > 5) {
+                    byte[] bFieldResp = getBitFieldMessage();
 
-                boolean interestedINPeer = false;
-                //BitSet RecievedM = BitSet.valueOf(message);
-                //BitSet BitFiled = BitSet.valueOf(bFieldResp)
-                for (int i = 0; i <= (message.length - 1) * 8; i++) {
-                    if (isSet(bFieldResp, i) != isSet(message, i))
-                        interestedINPeer = true;
+                    boolean interestedINPeer = false;
+                    //BitSet RecievedM = BitSet.valueOf(message);
+                    //BitSet BitFiled = BitSet.valueOf(bFieldResp)
+                    for (int i = 0; i <= (message.length - 1) * 8; i++) {
+                        if (isSet(bFieldResp, i) != isSet(message, i))
+                            interestedINPeer = true;
 
-                }
-
-                //The bitfield starts at byte 5 aka bit 40
-                for (int i = 40; i < 40 + hasPieces[OtherPeer - 1001].length; i++) {
-                    if (isSet(message, i)) {
-                        hasPieces[OtherPeer - 1001][i - 40] = true;
                     }
-                }
-                isInterested[OtherPeer - 1001] = interestedINPeer;
 
-                try {
-                    if (interestedINPeer) {
-                        if (OtherPeer < getPeerID())
-                            clients[OtherPeer - 1001].sendRequest(InterestedMsg());
-                        else
-                            clients[OtherPeer - 1002].sendRequest(InterestedMsg());
-                    } else {
-                        if (OtherPeer < getPeerID())
-                            clients[OtherPeer - 1001].sendRequest(UnInterestedMsg());
-                        else
-                            clients[OtherPeer - 1002].sendRequest(UnInterestedMsg());
+                    //The bitfield starts at byte 5 aka bit 40
+                    for (int i = 40; i < 40 + hasPieces[OtherPeer - 1001].length; i++) {
+                        if (isSet(message, i)) {
+                            hasPieces[OtherPeer - 1001][i - 40] = true;
+                        }
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
+                    isInterested[OtherPeer - 1001] = interestedINPeer;
+
+                    try {
+                        if (interestedINPeer) {
+                            if (OtherPeer < getPeerID())
+                                clients[OtherPeer - 1001].sendRequest(InterestedMsg());
+                            else
+                                clients[OtherPeer - 1002].sendRequest(InterestedMsg());
+                        } else {
+                            if (OtherPeer < getPeerID())
+                                clients[OtherPeer - 1001].sendRequest(UnInterestedMsg());
+                            else
+                                clients[OtherPeer - 1002].sendRequest(UnInterestedMsg());
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+
+                    System.out.println("Bitfield");
                 }
-
-
-                System.out.println("Bitfield");
                 break;
             case 6:
                 // REQUEST
@@ -639,8 +642,11 @@ public class Peer {
 
     // Sets bits, good for comparison
     public synchronized boolean isSet(byte[] bitArr, int bit) {
-        int i = bit / 8;
+        int i = (int) Math.floor((double) bit / 8);
         int bitPos = bit % 8;
+        if(i >= bitArr.length){
+            return false;
+        }
         return (bitArr[i] >> bitPos & 1) == 1;
     }
 
@@ -717,6 +723,16 @@ public class Peer {
             bw.close();
             fileWriter.close();
         } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public synchronized void savePiecesAsFile(){
+
+        fc = new FileConverter();
+        try {
+            fc.byteToFile(filePieces,new File("NetworkingProject\\src\\main\\java\\project_config_file_small\\project_config_file_small\\" + peerID).getCanonicalPath(), new File("NetworkingProject\\src\\main\\java\\project_config_file_small\\project_config_file_small\\" + peerID + "\\thefile").getCanonicalPath(), commonInfo);
+        }catch (IOException e){
             e.printStackTrace();
         }
     }
