@@ -631,7 +631,7 @@ public class Peer {
                     }
                 }
 
-                return randP;
+                return IndexOfPiecesMissing.get(randP);
             }
         return -1;
     }

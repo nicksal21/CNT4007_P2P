@@ -205,12 +205,13 @@ class Project extends Thread {
                 if(ClientPeer.getPeerID() - 1001 > i) {
                     pieceReq = ClientPeer.FindPieceToRequest(1001 + i);
                     if(pieceReq != -1)
-                        cPeer[i].sendRequest(ClientPeer.requestMessage(missing.get(pieceReq)));
+                        //missing.get(pieceReq)
+                        cPeer[i].sendRequest(ClientPeer.requestMessage(pieceReq));
                 }
                 else {
                     pieceReq = ClientPeer.FindPieceToRequest(1002 + i);
                     if(pieceReq!= -1)
-                        cPeer[i].sendRequest(ClientPeer.requestMessage(missing.get(pieceReq)));
+                        cPeer[i].sendRequest(ClientPeer.requestMessage(pieceReq));
                 }
 
 

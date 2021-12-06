@@ -165,8 +165,8 @@ public class Server extends Thread { // https://www.baeldung.com/a-guide-to-java
                 sentReq.readFully(MsgReq);
 
                 while (true) {
-
-                    ServerPeer.interpretMessage(Clientkey, MsgReq);
+                    if(MsgReq.length > 4)
+                        ServerPeer.interpretMessage(Clientkey, MsgReq);
                     cReqLength = sentReq.readInt();
                     MsgReq = new byte[cReqLength];
                     sentReq.readFully(MsgReq);
