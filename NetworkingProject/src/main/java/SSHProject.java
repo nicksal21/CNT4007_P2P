@@ -5,6 +5,7 @@ package main.java;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.Inet4Address;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -12,13 +13,11 @@ import java.util.*;
  * Main Project File:
  * Collects PeerInfo.cfg and Common.cfg and begins connections
  */
-class Project extends Thread {
-    public Server[] servers;
-    public Client[][] clients;
-
+class SSHProject extends Thread {
     static LinkedHashMap<Integer, String[]> PeerInfo;
     static LinkedHashMap<String, String> CommonInfo;
-
+    public Server[] servers;
+    public Client[][] clients;
     Set<Integer> keySetArray;
     Integer[] keySet;
 
@@ -113,13 +112,6 @@ class Project extends Thread {
         return lhm;
     }
 
-    /*
-     * In order for the main to run properly User needs to enter the locations
-     * of the PeerInfo.cfg and CommonInfo.cfg in that order. With this information
-     * the main will use the information provided to run the read functions mentioned
-     * previously. The Linked Hash Maps will then been utilized to build the Peer Object
-     * and TCP Network.
-     */
 
     /*I figured out how to thread through this youtube video
     https://www.youtube.com/watch?v=eQk5AWcTS8w&ab_channel=JakobJenkov
@@ -152,7 +144,6 @@ class Project extends Thread {
 
     }
 
-
     public static class PeerClientBehavior implements Runnable {
         Client[] cPeer;
         int key;
@@ -172,7 +163,6 @@ class Project extends Thread {
             byte[] message;
             message = ClientPeer.getBitFieldMessage();
             if (ClientPeer.getHasFile()) {
-
                 for (int i = 0; i < cPeer.length; i++) {
                     try {
                         cPeer[i].sendRequest(message);
@@ -182,7 +172,6 @@ class Project extends Thread {
                 }
             }
 
-
             for (int i = 0; i < cPeer.length; i++) {
                 try {
                     cPeer[i].sendRequest(ClientPeer.ChokeMsg());
@@ -190,7 +179,7 @@ class Project extends Thread {
                     e.printStackTrace();
                 }
             }
-
+            // This section was for testing an unchoked file transfers
             /*int pieceReq;
             ArrayList<Integer> missing;
             do {
@@ -223,6 +212,13 @@ class Project extends Thread {
 
     }
 
+    /*
+     * In order for the main to run properly User needs to enter the locations
+     * of the PeerInfo.cfg and CommonInfo.cfg in that order. With this information
+     * the main will use the information provided to run the read functions mentioned
+     * previously. The Linked Hash Maps will then been utilized to build the Peer Object
+     * and TCP Network.
+     */
 
     public static void main(String[] args) throws IOException {
         ArrayList<Peer> peersOnline = new ArrayList<>();
@@ -231,7 +227,7 @@ class Project extends Thread {
         Scanner userInput = new Scanner(System.in);
         int in = userInput.nextInt();
         String path = "";
-        String workFile;
+        String workFile = "";
         LinkedHashMap<Integer, String[]> PeerInfo;
         LinkedHashMap<String, String> CommonInfo;
         if(in == 0) {
@@ -272,8 +268,12 @@ class Project extends Thread {
         Set<Integer> keySetArray = PeerInfo.keySet();
         Integer[] keySet = keySetArray.toArray(new Integer[keySetArray.size()]);
 
+        // Testing sample values
+        System.out.println(Arrays.toString(PeerInfo.get(1001)));
+        System.out.println(Arrays.toString(PeerInfo.get(1004)));
+
         // Test Print
-        for (int i = 0; i < keySetArray.size(); i++) {
+        for (int i = 0; i <= 8; i++) {
             int temp = 1001 + i;
             System.out.println(Arrays.toString(PeerInfo.get(temp)));
         }
@@ -290,65 +290,68 @@ class Project extends Thread {
         //https://docs.oracle.com/javase/7/docs/api/java/util/Timer.html
         //In order to understand how they work
 
-        Server[] servers = new Server[keySet.length];
-        Thread[] threads = new Thread[keySet.length];
-        Client[][] clients = new Client[keySet.length][keySet.length - 1];
+        Server server = new Server();
+        Thread thread = new Thread();
+        Client[] clients = new Client[keySet.length - 1];
 
         /*
          * This for loop is responsible for creating peer objects which
          * will contain all the necessary information that our Peer-2-Peer
          * network will be utilizing
          */
-        for (int i = 0; i < keySet.length; i++) {
-            peersOnline.add(new Peer(1001 + i, PeerInfo, CommonInfo, servers[i], clients[i],workFile));
+        // TODO: If IP address causes issue, try using ".trim()"
+        String compIpAddress = Inet4Address.getLocalHost().getHostAddress();
+        int peerId = 0;
+        for (int i = 0; i < PeerInfo.size(); i++) {
+            if (PeerInfo.get(0)[0].equals(compIpAddress)) {
+                peerId = keySet[i];
+            }
         }
+
+        peersOnline.add(new Peer(peerId, PeerInfo, CommonInfo, server, clients, workFile));
+
 
         //Starting severs in different threads
-        for (int k = 0; k < keySet.length; k++) {
-            int key = 1001 + k;
-            int port = Integer.parseInt(PeerInfo.get(1001 + k)[1]);
-            String hostname = PeerInfo.get(1001 + k)[0];
+        int port = Integer.parseInt(PeerInfo.get(peerId - 1001)[1]);
+        String hostname = PeerInfo.get(peerId - 1001)[0];
 
-            //ServerSocket serverSocket =
-            servers[k] = new Server();
-            //Making threads for servers
-            threads[k] = new Thread(new PeerServer(servers[k], key, port, peersOnline.get(k)));
-            threads[k].start();
-        }
+        //ServerSocket serverSocket =
+        server = new Server();
+        //Making threads for servers
+        thread = new Thread(new PeerServer(server, peerId, port, peersOnline.get(peerId - 1001)));
+        thread.start();
 
 
-        for (int i = 0; i < keySet.length; i++) {
-            int foundDup = 0;
-            for (int j = 0; j < keySet.length; j++) {
-                if (keySet[j] != 1001 + i) {
-                    int portN = Integer.parseInt(PeerInfo.get(1001 + j)[1]);
-                    String hostname = PeerInfo.get(1001 + j)[0];
-                    //Client client = new Client(PeerInfo.get(1001+i)[0], Integer.parseInt(PeerInfo.get(1001+i)[1]));
-                    Client client = new Client(peersOnline.get(j));
-                    client.start();
-                    client.startConnection(hostname, portN + keySet[j]);
+        int foundDup = 0;
+        for (int j = 0; j < keySet.length; j++) {
+            if (keySet[j] != peerId) {
+                int portN = Integer.parseInt(PeerInfo.get(1001 + j)[1]);
+                hostname = PeerInfo.get(1001 + j)[0];
+                //Client client = new Client(PeerInfo.get(1001+i)[0], Integer.parseInt(PeerInfo.get(1001+i)[1]));
+                Client client = new Client(peersOnline.get(j));
+                client.start();
+                client.startConnection(hostname, portN + keySet[j]);
 
-                    peersOnline.get(j).writeLogMessage(peersOnline.get(i).getPeerID(), null, 0, 0, 0);
+                peersOnline.get(j).writeLogMessage(peersOnline.get(peerId - 1001).getPeerID(), null, 0, 0, 0);
 
-                    //Handshake need to make it byte[]
-                    String handshakeMessage = "P2PFILESHARINGPROJ0000000000";
-                    handshakeMessage += keySet[i];
-                    byte[] handShake = handshakeMessage.getBytes(StandardCharsets.UTF_8);
-                    //client.handMessage(handshakeMessage);
-                    client.sendRequest(handShake);
-                    clients[i][j - foundDup] = client;
-                } else
-                    foundDup = 1;
-
-            }
-            System.out.println("End of Clients for " + keySet[i]);
+                //Handshake need to make it byte[]
+                String handshakeMessage = "P2PFILESHARINGPROJ0000000000";
+                handshakeMessage += peerId;
+                byte[] handShake = handshakeMessage.getBytes(StandardCharsets.UTF_8);
+                //client.handMessage(handshakeMessage);
+                client.sendRequest(handShake);
+                clients[j - foundDup] = client;
+            } else
+                foundDup = 1;
 
         }
-        for (int i = 0; i < keySet.length; i++) {
-            peersOnline.get(i).setClientSockets(clients[i]);
-            peersOnline.get(i).setServerSockets(servers[i]);
+        System.out.println("End of Clients for " + peerId);
 
-        }
+
+        peersOnline.get(peerId - 1001).setClientSockets(clients);
+        peersOnline.get(1001).setServerSockets(server);
+
+
 
 
         /*
@@ -356,68 +359,55 @@ class Project extends Thread {
             Server handles request and uses their client to do something
          */
 
+        //ServerSocket serverSocket =
+        //Making threads for servers
+        Thread cThreads = new Thread(new PeerClientBehavior(clients, peerId, peersOnline.get(peerId - 1001)));
+        cThreads.start();
 
-        byte[] check = peersOnline.get(1).getBitFieldMessage();
-
-        Thread[] cThreads = new Thread[keySet.length];
-
-        for (int k = 0; k < keySet.length; k++) {
-            //ServerSocket serverSocket =
-            int key = 1001 + k;
-            //Making threads for servers
-            cThreads[k] = new Thread(new PeerClientBehavior(clients[k], key, peersOnline.get(k)));
-            cThreads[k].start();
-        }
 
         //TIMER
         final boolean[] timerRunning = {false, false};
         Timer UnchokeInterval = new Timer();
+        int finalPeerId = peerId;
         TimerTask Chk = new TimerTask() {
             @Override
             public void run() {
                 try {
                     timerRunning[0] = false;
-                    for (int p = 0; p < peersOnline.size(); p++) {
-                        for (int c = 0; c < clients[0].length; c++) {
-                            clients[p][c].sendRequest(peersOnline.get(p).ChokeMsg());
-                        }
+                    for (int c = 0; c < clients.length; c++) {
+                        clients[c].sendRequest(peersOnline.get(finalPeerId - 1001).ChokeMsg());
                     }
-                    for (int i = 0; i < peersOnline.size(); i++)
-                        peersOnline.get(i).determinePreferredNeighbors();
+                    peersOnline.get(finalPeerId - 1001).determinePreferredNeighbors();
 
-                    for (int p = 0; p < peersOnline.size(); p++) {
-                        for (int c = 0; c < clients[0].length; c++) {
-                            clients[p][c].sendRequest(peersOnline.get(p).UnChokeMsg());
-                        }
+                    for (int c = 0; c < clients.length; c++) {
+                        clients[c].sendRequest(peersOnline.get(finalPeerId - 1001).UnChokeMsg());
                     }
 
-                }catch (IOException e){
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
         };
         Timer OPUnchokeInterval = new Timer();
+        int finalPeerId1 = peerId;
         TimerTask Op = new TimerTask() {
             @Override
             public void run() {
                 timerRunning[1] = false;
-                for (int i = 0; i < peersOnline.size(); i++)
-                    peersOnline.get(i).determineOpNeighbors();
+                peersOnline.get(finalPeerId1 - 1001).determineOpNeighbors();
 
-                for (int p = 0; p < peersOnline.size(); p++) {
-                    for (int c = 0; c < clients[0].length; c++) {
+                    for (int c = 0; c < clients.length; c++) {
                         try {
-                            clients[p][c].sendRequest(peersOnline.get(p).UnChokeMsg());
+                            clients[c].sendRequest(peersOnline.get(finalPeerId1 -1001).UnChokeMsg());
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                     }
-                }
+
 
 
             }
         };
-
 
 
         //This checks if all the peers have the file, if so they will end the program
@@ -426,11 +416,11 @@ class Project extends Thread {
         int numDone = 0;
         boolean[][] peerProg = peersOnline.get(0).getHasPieces();
 
-        UnchokeInterval.scheduleAtFixedRate(Chk, peersOnline.get(0).unchokeInterval * 1000, peersOnline.get(0).unchokeInterval * 1000);
-        OPUnchokeInterval.scheduleAtFixedRate(Op, peersOnline.get(0).OptimisticUnchokeInterval * 1000, peersOnline.get(0).OptimisticUnchokeInterval * 1000);
+        UnchokeInterval.scheduleAtFixedRate(Chk, peersOnline.get(peerId-1001).unchokeInterval * 1000, peersOnline.get(peerId-1001).unchokeInterval * 1000);
+        OPUnchokeInterval.scheduleAtFixedRate(Op, peersOnline.get(peerId-1001).OptimisticUnchokeInterval * 1000, peersOnline.get(peerId-1001).OptimisticUnchokeInterval * 1000);
 
         do {
-            peerProg = peersOnline.get(0).getHasPieces();
+            peerProg = peersOnline.get(peerId-1001).getHasPieces();
             AllFinished = true;
             numDone = 0;
 
@@ -439,14 +429,12 @@ class Project extends Thread {
                 for (int j = 0; j < peerProg[i].length; j++) {
                     if (!peerProg[i][j]) {
                         AllFinished = false;
-                    }
-                    else
-                    {
-                        numDone ++;
+                    } else {
+                        numDone++;
                     }
                 }
             }
-            if(totalNumDone != numDone) {
+            if (totalNumDone != numDone) {
                 totalNumDone = numDone;
                 System.out.println(totalNumDone);
             }
@@ -455,9 +443,9 @@ class Project extends Thread {
 
         System.out.println("All Peers have File");
 
-        for (int i = 0; i < peersOnline.size(); i++) {
-            peersOnline.get(i).savePiecesAsFile();
-        }
+
+        peersOnline.get(peerId-1001).savePiecesAsFile();
+
         System.out.println("AllFilesArePrinted");
         System.exit(0);
 

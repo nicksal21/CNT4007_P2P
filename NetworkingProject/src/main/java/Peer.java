@@ -8,7 +8,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.LinkedHashMap;
 
 /*
  * Peer Object
@@ -21,6 +24,12 @@ import java.util.*;
 
 public class Peer {
 
+    int unchokeInterval;
+    int OptimisticUnchokeInterval;
+    int[] PreferredNeighbors;
+    int[] filesTranseredToPN;
+    int OptPeer;
+    int fileTransferedToOPN;
     //Class Variables
     private String hostName;
     private int peerID;
@@ -40,18 +49,13 @@ public class Peer {
     private ArrayList<Integer> IndexOfPiecesMissing;
     private int PieceSize;
     private int fileSize;
-    int unchokeInterval;
-    int OptimisticUnchokeInterval;
-
-    int[] PreferredNeighbors;
-    int[] filesTranseredToPN;
-    int OptPeer;
-    int fileTransferedToOPN;
+    String FileLocation;
+    String DirectoryLoc;
 
 
     // This is the constructor of the class Peer
     public Peer(int key, LinkedHashMap<Integer, String[]> peerInfo, LinkedHashMap<String,
-            String> cInfo, Server server, Client[] clients) throws IOException {
+            String> cInfo, Server server, Client[] clients, String File) throws IOException {
         //Sets all peer object variable to the info obtained from reading peerInfo.cfg and commonInfo.cfg
         hostName = peerInfo.get(key)[0];
         listeningPort = Integer.parseInt(peerInfo.get(key)[1]);
@@ -85,7 +89,21 @@ public class Peer {
         OptimisticUnchokeInterval = Integer.parseInt(commonInfo.get("OptimisticUnchokingInterval"));
         unchokeInterval = Integer.parseInt(commonInfo.get("UnchokingInterval"));
 
+        String test = new File("NetworkingProject\\src\\main\\java\\project_config_file_small\\project_config_file_small\\").getCanonicalPath();
+
+        if(File.equals(test)) {
+            DirectoryLoc = File+"\\"+peerID;
+            FileLocation = DirectoryLoc + "\\thefile";
+
+        }
+        else {
+            DirectoryLoc = File+"\\"+peerID;
+            FileLocation = DirectoryLoc + "\\tree.jpg";
+        }
+
         setFilePieces(commonInfo, hasFile, key);
+
+
     }
 
 
@@ -111,7 +129,7 @@ public class Peer {
 
         if (hasFile) {
             //filePieces = fc.fileToByte("src/main/java/project_config_file_small/project_config_file_small/"+key+"/thefile", commonInfo);
-            filePieces = fc.fileToByte(new File("NetworkingProject\\src\\main\\java\\project_config_file_small\\project_config_file_small\\" + key + "\\thefile").getCanonicalPath(), commonInfo);
+            filePieces = fc.fileToByte(FileLocation, commonInfo);
             for (int i = 0; i < (int) Math.ceil((double) fileSize / PieceSize); i++) {
                 hasPieces[getPeerID() - 1001][i] = true;
             }
@@ -312,7 +330,7 @@ public class Peer {
         switch (messageType) {
             case 0:
                 // CHOKE - Set isChoked to true
-                if(!isChoked[OtherPeer-1001]) {
+                if (!isChoked[OtherPeer - 1001]) {
                     isChoked[OtherPeer - 1001] = true;
                     writeLogMessage(OtherPeer, PreferredNeighbors, 0, 0, 5);
                 }
@@ -322,16 +340,35 @@ public class Peer {
 
                 //If the peer correlates to a preferred neighbor
                 boolean preFNeighbor = false;
-                for(int i = 0; i< PreferredNeighbors.length; i++){
-                    if(OtherPeer == PreferredNeighbors[i]){
+                for (int i = 0; i < PreferredNeighbors.length; i++) {
+                    if (OtherPeer == PreferredNeighbors[i]) {
                         preFNeighbor = true;
                         break;
                     }
                 }
-                if(preFNeighbor || OtherPeer == OptPeer) {
-                    if (isChoked[OtherPeer-1001]) {
+                if (preFNeighbor || OtherPeer == OptPeer) {
+                    if (isChoked[OtherPeer - 1001]) {
                         isChoked[OtherPeer - 1001] = false;
                         writeLogMessage(OtherPeer, PreferredNeighbors, 0, 0, 4);
+                    }
+                }
+
+                if (!hasFile) {
+                    try {
+                        int pieceReq;
+                        if (peerID > OtherPeer) {
+                            pieceReq = FindPieceToRequest(OtherPeer);
+                            if (pieceReq != -1) {
+                                clients[OtherPeer - 1001].sendRequest(requestMessage(pieceReq));
+                            }
+                        } else {
+                            pieceReq = FindPieceToRequest(OtherPeer);
+                            if (pieceReq != -1) {
+                                clients[OtherPeer - 1002].sendRequest(requestMessage(pieceReq));
+                            }
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
 
@@ -339,14 +376,14 @@ public class Peer {
                 break;
             case 2:
                 // INTERESTED - Set isInterested to true
-                if(!isInterested[OtherPeer-1001]) {
+                if (!isInterested[OtherPeer - 1001]) {
                     isInterested[OtherPeer - 1001] = true;
                     writeLogMessage(OtherPeer, PreferredNeighbors, 0, 0, 7);
                 }
                 break;
             case 3:
                 // UNINTERESTED - Set isInterested to false
-                if(isInterested[OtherPeer-1001]) {
+                if (isInterested[OtherPeer - 1001]) {
                     isInterested[OtherPeer - 1001] = false;
                     writeLogMessage(OtherPeer, PreferredNeighbors, 0, 0, 8);
                 }
@@ -355,8 +392,9 @@ public class Peer {
                 // HAVE
                 // TODO: IMPLEMENT HAVE
                 byte[] OPhave = new byte[4];
-                for (int i = 5; i < message.length; i++)
+                for (int i = 5; i < message.length; i++) {
                     OPhave[i - 5] = message[i];
+                }
                 int OPH = ByteBuffer.wrap(OPhave).getInt();
                 hasPieces[OtherPeer - 1001][OPH] = true;
 
@@ -391,22 +429,29 @@ public class Peer {
             case 5:
                 // BITFIELD
                 //As soon as a BitFieldRequest is sent
-                if(message.length > 5) {
+                if (message.length > 5) {
                     byte[] bFieldResp = getBitFieldMessage();
 
                     boolean interestedINPeer = false;
                     //BitSet RecievedM = BitSet.valueOf(message);
                     //BitSet BitFiled = BitSet.valueOf(bFieldResp)
-                    for (int i = 0; i <= (message.length - 1) * 8; i++) {
-                        if (isSet(bFieldResp, i) != isSet(message, i))
+                  /*  for (int i = 0; i <= (message.length - 1) * 8; i++) {
+                        if (isSet(bFieldResp, i) != isSet(message, i)) {
                             interestedINPeer = true;
-
-                    }
+                        }
+                    }*/
 
                     //The bitfield starts at byte 5 aka bit 40
                     for (int i = 40; i < 40 + hasPieces[OtherPeer - 1001].length; i++) {
                         if (isSet(message, i)) {
                             hasPieces[OtherPeer - 1001][i - 40] = true;
+                        }
+                    }
+
+                    for (int i = 0; i < hasPieces[peerID - 1001].length; i++) {
+                        if (hasPieces[peerID - 1001][i] != hasPieces[OtherPeer - 1001][i] && hasPieces[OtherPeer - 1001][i]) {
+                            interestedINPeer = true;
+                            break;
                         }
                     }
                     isInterested[OtherPeer - 1001] = interestedINPeer;
@@ -426,8 +471,6 @@ public class Peer {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-
-
                     System.out.println("Bitfield");
                 }
                 break;
@@ -441,21 +484,21 @@ public class Peer {
                 if (!isChoked[OtherPeer - 1001]) {
 
                     boolean isPreferred = false;
-                    for(int i = 0; i < PreferredNeighbors.length; i++){
-                        if(PreferredNeighbors[i] == OtherPeer){
+                    for (int i = 0; i < PreferredNeighbors.length; i++) {
+                        if (PreferredNeighbors[i] == OtherPeer) {
                             filesTranseredToPN[i]++;
                             isPreferred = true;
                             break;
                         }
                     }
 
-                    if(isPreferred || OtherPeer == OptPeer) {
-                        if(OtherPeer == OptPeer)
+                    if (isPreferred || OtherPeer == OptPeer) {
+                        if (OtherPeer == OptPeer)
                             fileTransferedToOPN++;
                         byte[] OPReq = new byte[4];
-                        for (int i = 5; i < message.length; i++)
+                        for (int i = 5; i < message.length; i++) {
                             OPReq[i - 5] = message[i];
-
+                        }
                         int OPReqed = ByteBuffer.wrap(OPReq).getInt();
 
                         try {
@@ -474,7 +517,7 @@ public class Peer {
             case 7:
                 // PIECE
                 // TODO: IMPLEMENT PIECE
-                if(!hasFile) {
+                if (!hasFile) {
                     byte[] pieceIndex = new byte[4];
                     byte[] pieceReceived = new byte[PieceSize];
                     for (int i = 5; i < message.length; i++) {
@@ -486,8 +529,8 @@ public class Peer {
                     int pIndex = ByteBuffer.wrap(pieceIndex).getInt();
 
                     boolean badPayload = true;
-                    for (int p = 0; p < pieceReceived.length; p++){
-                        if(pieceReceived[p] != 0){
+                    for (int p = 0; p < pieceReceived.length; p++) {
+                        if (pieceReceived[p] != 0) {
                             badPayload = false;
                             break;
                         }
@@ -510,8 +553,8 @@ public class Peer {
                             }
                         }
                         int numberOfPieces = 0;
-                        for(int i = 0; i < hasPieces[peerID - 1001].length; i++) {
-                            if(hasPieces[peerID-1001][i]) {
+                        for (int i = 0; i < hasPieces[peerID - 1001].length; i++) {
+                            if (hasPieces[peerID - 1001][i]) {
                                 numberOfPieces++;
                             }
                         }
@@ -535,13 +578,32 @@ public class Peer {
 
                         // Once 'receive' a piece send HAVE to all the other Peers
                         try {
-                            for (int i = 0; i < clients.length; i++)
+                            for (int i = 0; i < clients.length; i++) {
                                 clients[i].sendRequest(haveMsg(pIndex));
+                            }
                         } catch (IOException e) {
                             System.err.println("IOEX in Piece recieved");
                         }
 
-                /* uwu */
+                        /* uwu */
+                    }
+                    if (!hasFile) {
+                        try {
+                            int pieceReq;
+                            if (peerID > OtherPeer) {
+                                pieceReq = FindPieceToRequest(OtherPeer);
+                                if (pieceReq != -1) {
+                                    clients[OtherPeer - 1001].sendRequest(requestMessage(pieceReq));
+                                }
+                            } else {
+                                pieceReq = FindPieceToRequest(OtherPeer);
+                                if (pieceReq != -1) {
+                                    clients[OtherPeer - 1002].sendRequest(requestMessage(pieceReq));
+                                }
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
                 break;
@@ -552,9 +614,8 @@ public class Peer {
     public synchronized void determinePreferredNeighbors() {
 
         //If requested has values inside store because messages could be lost
-        for(int i = 0; i < ReqPfromNeighbors.length; i++){
-            if(ReqPfromNeighbors[i] != -1) {
-                IndexOfPiecesMissing.add(ReqPfromNeighbors[i]);
+        for (int i = 0; i < ReqPfromNeighbors.length; i++) {
+            if (ReqPfromNeighbors[i] != -1) {
                 ReqPfromNeighbors[i] = -1;
             }
         }
@@ -603,7 +664,9 @@ public class Peer {
             ArrayList<Integer> interested = new ArrayList<Integer>(isInterested.length) {
             };
             for (int i = 0; i < isInterested.length; i++) {
-                interested.add(i, 1001 + i);
+                if(peerID-1001 != i) {
+                    interested.add(1001 + i);
+                }
             }
 
             // Randomly remove from the list, thus randomly selecting peers.
@@ -622,17 +685,16 @@ public class Peer {
         //Checking any peers are interested in this peer
         boolean thereArePeersInterested = false;
         for (int i = 0; i < isInterested.length; i++) {
-            for (int j = 0; j < PreferredNeighbors.length; j++){
-                if (isInterested[i] && PreferredNeighbors[j] != 1001+j) {
+            for (int j = 0; j < PreferredNeighbors.length; j++) {
+                if (isInterested[i] && PreferredNeighbors[j] != 1001 + j) {
                     thereArePeersInterested = true;
-                }
-                else{
+                } else {
                     thereArePeersInterested = false;
                     break;
                 }
             }
         }
-        if(thereArePeersInterested) {
+        if (thereArePeersInterested) {
             // What is interested and not a preferred neighbor already?
             ArrayList<Integer> interested = new ArrayList<>() {
             };
@@ -651,20 +713,18 @@ public class Peer {
             }
 
             int randP = (int) (Math.random() * interested.size());
-            if(interested.size() > 0)
+            if (interested.size() > 0)
                 OptPeer = interested.get(randP);
             fileTransferedToOPN = 0;
-        }
-        else {
+        } else {
             ArrayList<Integer> chokedNeighbors = new ArrayList<>();
-            for(int i = 0; i < isChoked.length; i++){
-                for (int j = 0; j < PreferredNeighbors.length; j++){
-                    if(isChoked[i] && PreferredNeighbors[j] == 1001+i){
+            for (int i = 0; i < isChoked.length; i++) {
+                for (int j = 0; j < PreferredNeighbors.length; j++) {
+                    if (isChoked[i] && PreferredNeighbors[j] == 1001 + i) {
                         break;
                     }
-
                 }
-                chokedNeighbors.add(i, i+1001);
+                chokedNeighbors.add(i, i + 1001);
             }
             int randP = (int) (Math.random() * chokedNeighbors.size());
             OptPeer = chokedNeighbors.get(randP);
@@ -680,14 +740,14 @@ public class Peer {
         //if (!hasPieces[peerID - 1001][i])
         //dNHTFile = true;
         boolean reqIsfull = true;
-        for(int i = 0; i < ReqPfromNeighbors.length; i++){
-            if(ReqPfromNeighbors[i] == -1){
+        for (int i = 0; i < ReqPfromNeighbors.length; i++) {
+            if (ReqPfromNeighbors[i] == -1) {
                 reqIsfull = false;
                 break;
             }
         }
-        if(reqIsfull){
-            for(int i = 0; i < ReqPfromNeighbors.length; i++){
+        if (reqIsfull) {
+            for (int i = 0; i < ReqPfromNeighbors.length; i++) {
                 IndexOfPiecesMissing.add(ReqPfromNeighbors[i]);
                 ReqPfromNeighbors[i] = -1;
             }
@@ -695,7 +755,7 @@ public class Peer {
 
         }
 
-        if(isChoked[OtherPeer-1001]) {
+        if (isChoked[OtherPeer - 1001]) {
 
             // Making sure that we are not requesting what is already requested
             boolean hasPieceNReq = false;
@@ -741,11 +801,10 @@ public class Peer {
 
 
                 return IndexOfPiecesMissing.get(randP);
-            }
-            else {
-                for(int i = 0; i<ReqPfromNeighbors.length; i++){
-                    if(ReqPfromNeighbors[i] != -1){
-                       return ReqPfromNeighbors[i];
+            } else {
+                for (int i = 0; i < ReqPfromNeighbors.length; i++) {
+                    if (ReqPfromNeighbors[i] != -1) {
+                        return ReqPfromNeighbors[i];
                     }
                 }
             }
@@ -759,7 +818,7 @@ public class Peer {
     public synchronized boolean isSet(byte[] bitArr, int bit) {
         int i = (int) Math.floor((double) bit / 8);
         int bitPos = bit % 8;
-        if(i >= bitArr.length){
+        if (i >= bitArr.length) {
             return false;
         }
         return (bitArr[i] >> bitPos & 1) == 1;
@@ -822,6 +881,9 @@ public class Peer {
                     break;
                 case 9:
                     data = time + ": Peer " + peerID + " has downloaded the piece " + pieceIndex + " from " + peer2ID + ". Now the number of pieces it has is " + numPieces + ".\n";
+                    if (numPieces == (int) Math.ceil((double) fileSize / PieceSize)) {
+                        System.out.println("Peer " + peerID + " is done!");
+                    }
                     break;
                 case 10:
                     data = time + ": Peer " + peerID + " has downloaded the complete file.\n";
@@ -838,12 +900,12 @@ public class Peer {
         }
     }
 
-    public synchronized void savePiecesAsFile(){
+    public synchronized void savePiecesAsFile() {
 
         fc = new FileConverter();
         try {
-            fc.byteToFile(filePieces,new File("NetworkingProject\\src\\main\\java\\project_config_file_small\\project_config_file_small\\" + peerID).getCanonicalPath(), new File("NetworkingProject\\src\\main\\java\\project_config_file_small\\project_config_file_small\\" + peerID + "\\thefile").getCanonicalPath(), commonInfo);
-        }catch (IOException e){
+            fc.byteToFile(filePieces, DirectoryLoc, FileLocation, commonInfo);
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
