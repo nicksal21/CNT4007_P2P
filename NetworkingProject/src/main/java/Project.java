@@ -3,12 +3,8 @@ package main.java;
 
 // Imports
 
-import com.sun.source.tree.WhileLoopTree;
-
 import java.io.File;
 import java.io.IOException;
-import java.net.Socket;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -149,7 +145,7 @@ class Project extends Thread {
             System.out.println("Server " + key + " " + port + " is running");
 
             try {
-                Peer.startServer(key, port + key, PeerInfo, CommonInfo, sPeer);
+                Peer.startServer(key, port + key, sPeer);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -331,6 +327,8 @@ class Project extends Thread {
                     client.start();
                     client.startConnection(hostname, portN + keySet[j]);
 
+                    peersOnline.get(j).writeLogMessage(peersOnline.get(i).getPeerID(), null, 0, 0, 0);
+
                     //Handshake need to make it byte[]
                     String handshakeMessage = "P2PFILESHARINGPROJ0000000000";
                     handshakeMessage += keySet[i];
@@ -351,13 +349,6 @@ class Project extends Thread {
 
         }
 
-
-        //byte[] test = new byte[]{0,0,0,1,0};
-        // clients[0][0].sendRequest(test);
-
-        //byte[] msg = peersOnline.get(0).pieceMessage(32);
-
-        // boolean pause = true;
 
         /*
             Set a loop that uses clients to send requests to peers
@@ -462,29 +453,16 @@ class Project extends Thread {
         } while (!AllFinished);
 
         System.out.println("All Peers have File");
-          /*  try {
-                for (int i = 0; i < threads.length; i++)
-                    threads[i].join();
-                for (int i = 0; i < cThreads.length; i++)
-                    cThreads[i].join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } */
 
         for (int i = 0; i < peersOnline.size(); i++)
-            if(i!=0 || i!=5)
+            if(i!=0 && i!=5) {
                 peersOnline.get(i).savePiecesAsFile();
+            }
         System.out.println("AllFilesArePrinted");
         System.exit(0);
 
         /*
          * To-do list
-         * TODO: Zeroth, Work on implement logging for different functions
-         * TODO: First, timers et al.
-         * TODO: Second, work on messages
-         * TODO: Third, housekeeping et al.
-         * TODO: Fourth, paths or smthg
-         * TODO: Fifth, Comment everything!
          *
          * Ouvuvuevuevue Enyetuenwevue Ugbemugbem Osas
          */

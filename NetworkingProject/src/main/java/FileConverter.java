@@ -12,9 +12,12 @@ public class FileConverter {
         int fileSize = Integer.parseInt(common.get("FileSize"));
         byte[] fileCont = fileCon.readAllBytes();
         byte[][] bInF = new byte[(int) Math.ceil((double) fileSize / PieceSize)][PieceSize];
-
-        for (int i = 0; i < fileSize; i++)
+        int j = 0;
+        for (int i = 0; i < fileSize; i++) {
             bInF[(int) Math.floor((double) i / PieceSize)][i % PieceSize] = fileCont[i];
+            j = i;
+        }
+        System.out.println(j);
         fileCon.close();
         return bInF;
     }
@@ -25,7 +28,8 @@ public class FileConverter {
         int fileSize = Integer.parseInt(common.get("FileSize"));
         byte[] fBytes = new byte[fileSize];
         for (int i = 0; i < fileSize; i++)
-            fBytes[i] = fBytArray[(int) Math.floor((double) fileSize / PieceSize)][i % PieceSize];
+            //
+            fBytes[i] = fBytArray[(int) Math.floor((double) i / PieceSize)][i % PieceSize];
 
 
         File Directory = new File(Dir);
